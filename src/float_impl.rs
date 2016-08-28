@@ -104,12 +104,12 @@ impl<F: Float, C: FloatChecker<F>> Neg for NoisyFloat<F, C> {
 }
 
 impl<F: Float, C: FloatChecker<F>> Zero for NoisyFloat<F, C> {
-    #[inline] fn zero() -> Self { Self::unchecked_new(F::zero()) }
+    #[inline] fn zero() -> Self { Self::new(F::zero()) }
     #[inline] fn is_zero(&self) -> bool { self.value.is_zero() }
 }
 
 impl<F: Float, C: FloatChecker<F>> One for NoisyFloat<F, C> {
-    #[inline] fn one() -> Self { Self::unchecked_new(F::one()) }
+    #[inline] fn one() -> Self { Self::new(F::one()) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Num for NoisyFloat<F, C> {

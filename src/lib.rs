@@ -120,7 +120,6 @@ impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<
 }
 
 
-//TODO add tests
 #[cfg(test)]
 mod tests {
     use prelude::*;
@@ -139,5 +138,25 @@ mod tests {
         assert!((N64::try_new(1.0).unwrap() / N64::infinity()).is_zero());
         assert!(NumCast::from(f32::INFINITY) == N64::try_new(f64::INFINITY));
         assert!(R64::try_new(f64::NEG_INFINITY) == None);
+        assert!(N64::try_new(f64::NAN) == None);
+        assert!(R64::try_new(f64::NAN) == None);
+    }
+    
+    #[test]
+    #[should_panic]
+    fn n64_nan() {
+        n64(0.0) / n64(0.0);
+    }
+    
+    #[test]
+    #[should_panic]
+    fn r64_nan() {
+        r64(0.0) / r64(0.0);
+    }
+    
+    #[test]
+    #[should_panic]
+    fn r64_infinity() {
+        r64(1.0) / r64(0.0);
     }
 }
