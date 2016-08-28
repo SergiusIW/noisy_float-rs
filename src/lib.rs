@@ -19,11 +19,11 @@ pub mod types;
 mod float_impl;
 
 use std::marker::PhantomData;
+use std::fmt;
 use num_traits::Float;
 
 //FIXME add doc comments
 //FIXME proofread rustdocs, make sure the impls from float_impl are included
-//FIXME implement Debug and Display for appropriate F types...
 
 pub trait FloatChecker<F> {
     fn assert(value: F);
@@ -83,6 +83,30 @@ impl<C: FloatChecker<f64>> Into<f64> for NoisyFloat<f64, C> {
     }
 }
 
+impl<F: Float + fmt::Debug, C: FloatChecker<F>> fmt::Debug for NoisyFloat<F, C> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        fmt::Debug::fmt(&self.value, f)
+    }
+}
+
+impl<F: Float + fmt::Display, C: FloatChecker<F>> fmt::Display for NoisyFloat<F, C> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        fmt::Display::fmt(&self.value, f)
+    }
+}
+
+impl<F: Float + fmt::LowerExp, C: FloatChecker<F>> fmt::LowerExp for NoisyFloat<F, C> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        fmt::LowerExp::fmt(&self.value, f)
+    }
+}
+
+impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<F, C> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        fmt::UpperExp::fmt(&self.value, f)
+    }
+}
+
 
 //TODO add tests
 #[cfg(test)]
@@ -91,6 +115,6 @@ mod tests {
 
     #[test]
     fn it_works() {
-        n64(1.0) + n64(2.0);
+        println!("1 + 2 = {}", n64(1.0) + n64(2.0));
     }
 }
