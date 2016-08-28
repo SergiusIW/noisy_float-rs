@@ -133,12 +133,7 @@ impl<F: Float, C: FloatChecker<F>> ToPrimitive for NoisyFloat<F, C> {
 }
 
 impl<F: Float, C: FloatChecker<F>> NumCast for NoisyFloat<F, C> {
-    #[inline] fn from<T: ToPrimitive>(n: T) -> Option<Self> {
-        match F::from(n) {
-            Some(value) => Self::try_new(value),
-            None => None
-        }
-    }
+    #[inline] fn from<T: ToPrimitive>(n: T) -> Option<Self> { F::from(n).and_then(|v| Self::try_new(v)) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
@@ -149,7 +144,7 @@ impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
     #[inline] fn min_value() -> Self { Self::new(F::min_value()) }
     #[inline] fn min_positive_value() -> Self { Self::new(F::min_positive_value()) }
     #[inline] fn max_value() -> Self { Self::new(F::max_value()) }
-    #[inline] fn is_nan(self) -> bool { false }
+    #[inline] fn is_nan(self) -> bool { self.value.is_nan() }
     #[inline] fn is_infinite(self) -> bool { self.value.is_infinite() }
     #[inline] fn is_finite(self) -> bool { self.value.is_finite() }
     #[inline] fn is_normal(self) -> bool { self.value.is_normal() }

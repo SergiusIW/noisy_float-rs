@@ -18,6 +18,14 @@ pub mod checkers;
 pub mod types;
 mod float_impl;
 
+pub mod prelude {
+    pub use types::*;
+    
+    pub use num_traits::{Float, Num};
+    pub use num_traits::cast::{ToPrimitive, NumCast};
+    pub use num_traits::identities::{Zero, One};
+}
+
 use std::marker::PhantomData;
 use std::fmt;
 use num_traits::Float;
@@ -84,24 +92,28 @@ impl<C: FloatChecker<f64>> Into<f64> for NoisyFloat<f64, C> {
 }
 
 impl<F: Float + fmt::Debug, C: FloatChecker<F>> fmt::Debug for NoisyFloat<F, C> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::Debug::fmt(&self.value, f)
     }
 }
 
 impl<F: Float + fmt::Display, C: FloatChecker<F>> fmt::Display for NoisyFloat<F, C> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::Display::fmt(&self.value, f)
     }
 }
 
 impl<F: Float + fmt::LowerExp, C: FloatChecker<F>> fmt::LowerExp for NoisyFloat<F, C> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::LowerExp::fmt(&self.value, f)
     }
 }
 
 impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<F, C> {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::UpperExp::fmt(&self.value, f)
     }
@@ -111,10 +123,21 @@ impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<
 //TODO add tests
 #[cfg(test)]
 mod tests {
-    use types::*;
+    use prelude::*;
+    use std::f32;
+    use std::f64::{self, consts};
 
     #[test]
-    fn it_works() {
-        println!("1 + 2 = {}", n64(1.0) + n64(2.0));
+    fn smoke_test() {
+        assert!(n64(1.0) + n64(2.0) == n64(3.0));
+        assert!(n64(3.0) != n64(2.9));
+        assert!(r64(1.0) < r64(2.0));
+        let mut value = n64(18.0);
+        value %= n64(5.0);
+        assert!(-value == n64(-3.0));
+        assert!(R64::one().exp() == r64(consts::E));
+        assert!((N64::try_new(1.0).unwrap() / N64::infinity()).is_zero());
+        assert!(NumCast::from(f32::INFINITY) == N64::try_new(f64::INFINITY));
+        assert!(R64::try_new(f64::NEG_INFINITY) == None);
     }
 }
