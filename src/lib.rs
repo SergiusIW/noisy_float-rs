@@ -21,9 +21,8 @@ mod float_impl;
 pub mod prelude {
     pub use types::*;
     
-    pub use num_traits::{Float, Num};
+    pub use num_traits::Float;
     pub use num_traits::cast::{ToPrimitive, NumCast};
-    pub use num_traits::identities::{Zero, One};
 }
 
 use std::marker::PhantomData;
@@ -134,8 +133,8 @@ mod tests {
         let mut value = n64(18.0);
         value %= n64(5.0);
         assert!(-value == n64(-3.0));
-        assert!(R64::one().exp() == r64(consts::E));
-        assert!((N64::try_new(1.0).unwrap() / N64::infinity()).is_zero());
+        assert!(r64(1.0).exp() == r64(consts::E));
+        assert!((N64::try_new(1.0).unwrap() / N64::infinity()) == n64(0.0));
         assert!(NumCast::from(f32::INFINITY) == N64::try_new(f64::INFINITY));
         assert!(R64::try_new(f64::NEG_INFINITY) == None);
         assert!(N64::try_new(f64::NAN) == None);
