@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ::{FloatChecker, CheckedFloat};
+use ::{FloatChecker, NoisyFloat};
 use std::cmp::Ordering;
 use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg};
 use std::num::FpCategory;
@@ -20,19 +20,21 @@ use num_traits::{Float, Num};
 use num_traits::cast::{NumCast, ToPrimitive};
 use num_traits::identities::{Zero, One};
 
-impl<F: Float, C: FloatChecker<F>> Clone for CheckedFloat<F, C> {
+//FIXME: implement Debug and Display for appropriate F types...
+
+impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
     #[inline] fn clone(&self) -> Self { Self::unchecked_new(self.value) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Copy for CheckedFloat<F, C> {}
+impl<F: Float, C: FloatChecker<F>> Copy for NoisyFloat<F, C> {}
 
-impl<F: Float, C: FloatChecker<F>> PartialEq for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> PartialEq for NoisyFloat<F, C> {
     #[inline] fn eq(&self, other: &Self) -> bool { self.value.eq(&other.value) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Eq for CheckedFloat<F, C> {}
+impl<F: Float, C: FloatChecker<F>> Eq for NoisyFloat<F, C> {}
 
-impl<F: Float, C: FloatChecker<F>> PartialOrd for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> PartialOrd for NoisyFloat<F, C> {
     #[inline] fn partial_cmp(&self, other: &Self) -> Option<Ordering> { self.value.partial_cmp(&other.value) }
     #[inline] fn lt(&self, other: &Self) -> bool { self.value.lt(&other.value) }
     #[inline] fn le(&self, other: &Self) -> bool { self.value.le(&other.value) }
@@ -40,7 +42,7 @@ impl<F: Float, C: FloatChecker<F>> PartialOrd for CheckedFloat<F, C> {
     #[inline] fn ge(&self, other: &Self) -> bool { self.value.ge(&other.value) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Ord for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
     #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
         if self.value < other.value {
@@ -53,71 +55,71 @@ impl<F: Float, C: FloatChecker<F>> Ord for CheckedFloat<F, C> {
     }
 }
 
-impl<F: Float, C: FloatChecker<F>> Add for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Add for NoisyFloat<F, C> {
     type Output = Self;
     #[inline] fn add(self, rhs: Self) -> Self { Self::new(self.value.add(rhs.value)) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Sub for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Sub for NoisyFloat<F, C> {
     type Output = Self;
     #[inline] fn sub(self, rhs: Self) -> Self { Self::new(self.value.sub(rhs.value)) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Mul for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Mul for NoisyFloat<F, C> {
     type Output = Self;
     #[inline] fn mul(self, rhs: Self) -> Self { Self::new(self.value.mul(rhs.value)) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Div for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Div for NoisyFloat<F, C> {
     type Output = Self;
     #[inline] fn div(self, rhs: Self) -> Self { Self::new(self.value.div(rhs.value)) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Rem for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Rem for NoisyFloat<F, C> {
     type Output = Self;
     #[inline] fn rem(self, rhs: Self) -> Self { Self::new(self.value.rem(rhs.value)) }
 }
 
-impl<F: Float + AddAssign, C: FloatChecker<F>> AddAssign for CheckedFloat<F, C> {
+impl<F: Float + AddAssign, C: FloatChecker<F>> AddAssign for NoisyFloat<F, C> {
     #[inline] fn add_assign(&mut self, rhs: Self) { self.value.add_assign(rhs.value); C::assert(self.value); }
 }
 
-impl<F: Float + SubAssign, C: FloatChecker<F>> SubAssign for CheckedFloat<F, C> {
+impl<F: Float + SubAssign, C: FloatChecker<F>> SubAssign for NoisyFloat<F, C> {
     #[inline] fn sub_assign(&mut self, rhs: Self) { self.value.sub_assign(rhs.value); C::assert(self.value); }
 }
 
-impl<F: Float + MulAssign, C: FloatChecker<F>> MulAssign for CheckedFloat<F, C> {
+impl<F: Float + MulAssign, C: FloatChecker<F>> MulAssign for NoisyFloat<F, C> {
     #[inline] fn mul_assign(&mut self, rhs: Self) { self.value.mul_assign(rhs.value); C::assert(self.value); }
 }
 
-impl<F: Float + DivAssign, C: FloatChecker<F>> DivAssign for CheckedFloat<F, C> {
+impl<F: Float + DivAssign, C: FloatChecker<F>> DivAssign for NoisyFloat<F, C> {
     #[inline] fn div_assign(&mut self, rhs: Self) { self.value.div_assign(rhs.value); C::assert(self.value); }
 }
 
-impl<F: Float + RemAssign, C: FloatChecker<F>> RemAssign for CheckedFloat<F, C> {
+impl<F: Float + RemAssign, C: FloatChecker<F>> RemAssign for NoisyFloat<F, C> {
     #[inline] fn rem_assign(&mut self, rhs: Self) { self.value.rem_assign(rhs.value); C::assert(self.value); }
 }
 
-impl<F: Float, C: FloatChecker<F>> Neg for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Neg for NoisyFloat<F, C> {
     type Output = Self;
     #[inline] fn neg(self) -> Self { Self::new(self.value.neg()) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Zero for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Zero for NoisyFloat<F, C> {
     #[inline] fn zero() -> Self { Self::unchecked_new(F::zero()) }
     #[inline] fn is_zero(&self) -> bool { self.value.is_zero() }
 }
 
-impl<F: Float, C: FloatChecker<F>> One for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> One for NoisyFloat<F, C> {
     #[inline] fn one() -> Self { Self::unchecked_new(F::one()) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Num for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Num for NoisyFloat<F, C> {
     type FromStrRadixErr = F::FromStrRadixErr;
     #[inline] fn from_str_radix(str: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> { F::from_str_radix(str, radix).map(|v| Self::new(v)) }
 }
 
-impl<F: Float, C: FloatChecker<F>> ToPrimitive for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> ToPrimitive for NoisyFloat<F, C> {
     #[inline] fn to_i64(&self) -> Option<i64> { self.value.to_i64() }
     #[inline] fn to_u64(&self) -> Option<u64> { self.value.to_u64() }
     #[inline] fn to_isize(&self) -> Option<isize> { self.value.to_isize() }
@@ -132,7 +134,7 @@ impl<F: Float, C: FloatChecker<F>> ToPrimitive for CheckedFloat<F, C> {
     #[inline] fn to_f64(&self) -> Option<f64> { self.value.to_f64() }
 }
 
-impl<F: Float, C: FloatChecker<F>> NumCast for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> NumCast for NoisyFloat<F, C> {
     #[inline] fn from<T: ToPrimitive>(n: T) -> Option<Self> {
         match F::from(n) {
             Some(value) => Self::try_new(value),
@@ -141,7 +143,7 @@ impl<F: Float, C: FloatChecker<F>> NumCast for CheckedFloat<F, C> {
     }
 }
 
-impl<F: Float, C: FloatChecker<F>> Float for CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
     #[inline] fn nan() -> Self { panic!("unexpected NaN") }
     #[inline] fn infinity() -> Self { Self::new(F::infinity()) }
     #[inline] fn neg_infinity() -> Self { Self::new(F::neg_infinity()) }

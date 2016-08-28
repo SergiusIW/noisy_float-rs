@@ -1,5 +1,5 @@
 [package]
-name = "checked_float"
+name = "noisy_float"
 version = "0.1.0"
 authors = ["Matthew Michelotti <matthew@matthewmichelotti.com>"]
 

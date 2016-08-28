@@ -19,7 +19,11 @@ mod float_impl;
 use std::marker::PhantomData;
 use num_traits::Float;
 
-//TODO add doc comments
+//FIXME add doc comments
+//FIXME proofread rustdocs, make sure the impls from float_impl are included
+//FIXME move NumChecker and FiniteChecker to a "checkers" module
+//FIXME move N32 ... r64 to a "types" module, and remove the prelude
+//FIXME careful with Eq definition for +/- 0
 
 pub mod prelude {
     pub use ::{N32, N64, R32, R64, n32, n64, r32, r64};
@@ -58,31 +62,31 @@ impl<F: Float> FloatChecker<F> for FiniteChecker {
     }
 }
 
-pub struct CheckedFloat<F: Float, C: FloatChecker<F>> {
+pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
     value: F,
     checker: PhantomData<C>
 }
 
 //note: not implementing From<F>, because From conversion is never supposed to fail, according to the docs
-impl<F: Float, C: FloatChecker<F>> CheckedFloat<F, C> {
+impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     #[inline]
-    pub fn new(value: F) -> CheckedFloat<F, C> {
+    pub fn new(value: F) -> NoisyFloat<F, C> {
         C::assert(value);
         Self::unchecked_new(value)
     }
     
     #[inline]
-    fn unchecked_new(value: F) -> CheckedFloat<F, C> {
-        CheckedFloat {
+    fn unchecked_new(value: F) -> NoisyFloat<F, C> {
+        NoisyFloat {
             value: value,
             checker: PhantomData
         }
     }
     
     #[inline]
-    pub fn try_new(value: F) -> Option<CheckedFloat<F, C>> {
+    pub fn try_new(value: F) -> Option<NoisyFloat<F, C>> {
         if C::check(value) {
-            Some(CheckedFloat {
+            Some(NoisyFloat {
                 value: value,
                 checker: PhantomData
             })
@@ -97,24 +101,24 @@ impl<F: Float, C: FloatChecker<F>> CheckedFloat<F, C> {
     }
 }
 
-impl<C: FloatChecker<f32>> Into<f32> for CheckedFloat<f32, C> {
+impl<C: FloatChecker<f32>> Into<f32> for NoisyFloat<f32, C> {
     #[inline]
     fn into(self) -> f32 {
         self.value
     }
 }
 
-impl<C: FloatChecker<f64>> Into<f64> for CheckedFloat<f64, C> {
+impl<C: FloatChecker<f64>> Into<f64> for NoisyFloat<f64, C> {
     #[inline]
     fn into(self) -> f64 {
         self.value
     }
 }
 
-pub type N32 = CheckedFloat<f32, NumChecker>;
-pub type N64 = CheckedFloat<f64, NumChecker>;
-pub type R32 = CheckedFloat<f32, FiniteChecker>;
-pub type R64 = CheckedFloat<f64, FiniteChecker>;
+pub type N32 = NoisyFloat<f32, NumChecker>;
+pub type N64 = NoisyFloat<f64, NumChecker>;
+pub type R32 = NoisyFloat<f32, FiniteChecker>;
+pub type R64 = NoisyFloat<f64, FiniteChecker>;
 
 #[inline]
 pub fn n32(value: f32) -> N32 {
