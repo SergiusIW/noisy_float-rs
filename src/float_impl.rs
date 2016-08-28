@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ::{FloatChecker, NoisyFloat};
 use std::cmp::Ordering;
 use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg};
 use std::num::FpCategory;
 use num_traits::{Float, Num};
 use num_traits::cast::{NumCast, ToPrimitive};
 use num_traits::identities::{Zero, One};
-
-//FIXME: implement Debug and Display for appropriate F types...
+use ::{FloatChecker, NoisyFloat};
 
 impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
     #[inline] fn clone(&self) -> Self { Self::unchecked_new(self.value) }

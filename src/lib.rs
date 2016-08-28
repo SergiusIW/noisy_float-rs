@@ -14,6 +14,8 @@
 
 extern crate num_traits;
 
+pub mod checkers;
+pub mod types;
 mod float_impl;
 
 use std::marker::PhantomData;
@@ -21,45 +23,11 @@ use num_traits::Float;
 
 //FIXME add doc comments
 //FIXME proofread rustdocs, make sure the impls from float_impl are included
-//FIXME move NumChecker and FiniteChecker to a "checkers" module
-//FIXME move N32 ... r64 to a "types" module, and remove the prelude
-//FIXME careful with Eq definition for +/- 0
-
-pub mod prelude {
-    pub use ::{N32, N64, R32, R64, n32, n64, r32, r64};
-}
+//FIXME implement Debug and Display for appropriate F types...
 
 pub trait FloatChecker<F> {
     fn assert(value: F);
     fn check(value: F) -> bool;
-}
-
-pub struct NumChecker;
-
-impl<F: Float> FloatChecker<F> for NumChecker {
-    #[inline]
-    fn assert(value: F) {
-        debug_assert!(Self::check(value), "unexpected NaN");
-    }
-    
-    #[inline]
-    fn check(value: F) -> bool {
-        !value.is_nan()
-    }
-}
-
-pub struct FiniteChecker;
-
-impl<F: Float> FloatChecker<F> for FiniteChecker {
-    #[inline]
-    fn assert(value: F) {
-        debug_assert!(Self::check(value), "unexpected NaN or infinity");
-    }
-    
-    #[inline]
-    fn check(value: F) -> bool {
-        value.is_finite()
-    }
 }
 
 pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
@@ -115,36 +83,11 @@ impl<C: FloatChecker<f64>> Into<f64> for NoisyFloat<f64, C> {
     }
 }
 
-pub type N32 = NoisyFloat<f32, NumChecker>;
-pub type N64 = NoisyFloat<f64, NumChecker>;
-pub type R32 = NoisyFloat<f32, FiniteChecker>;
-pub type R64 = NoisyFloat<f64, FiniteChecker>;
-
-#[inline]
-pub fn n32(value: f32) -> N32 {
-    N32::new(value)
-}
-
-#[inline]
-pub fn n64(value: f64) -> N64 {
-    N64::new(value)
-}
-
-#[inline]
-pub fn r32(value: f32) -> R32 {
-    R32::new(value)
-}
-
-#[inline]
-pub fn r64(value: f64) -> R64 {
-    R64::new(value)
-}
-
 
 //TODO add tests
 #[cfg(test)]
 mod tests {
-    use prelude::*;
+    use types::*;
 
     #[test]
     fn it_works() {
