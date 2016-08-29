@@ -24,7 +24,7 @@
 //! demonstrated by Rust's handling of integer overflow:
 //! a bad arithmetic operation is considered an error,
 //! but it is too costly to check everywhere in optimized builds.
-//! For each floating point value that is created, a `debug_assert!` invocation is used
+//! For each floating point number that is created, a `debug_assert!` invocation is used
 //! to check if it is valid or not.
 //! This way, there are guarantees when developing code that floating point
 //! numbers have valid values,
@@ -83,29 +83,46 @@ use std::marker::PhantomData;
 use std::fmt;
 use num_traits::Float;
 
-/// Trait for checking whether a floating point value is *valid*.
+/// Trait for checking whether a floating point number is *valid*.
 ///
 /// The implementation defines its own criteria for what constitutes a *valid* value.
 pub trait FloatChecker<F> {
-    /// Returns `true` if (and only if) the given floating point value is *valid*
-    /// according to this checker's criteria.  The only hard requirement is that NaN *must* be considered *invalid*
+    /// Returns `true` if (and only if) the given floating point number is *valid*
+    /// according to this checker's criteria.
+    ///
+    /// The only hard requirement is that NaN *must* be considered *invalid*
     /// for all implementations of `FloatChecker`.
     fn check(value: F) -> bool;
     
-    /// A function that may panic if the floating point value is *invalid*.
+    /// A function that may panic if the floating point number is *invalid*.
+    ///
     /// Should either call `assert!(check(value), ...)` or `debug_assert!(check(value), ...)`.
     fn assert(value: F);
 }
 
-//FIXME: finish documenting
-
+/// A floating point number with a restricted set of legal values.
+///
+/// Typical users will not need to access this struct directly, but
+/// can instead use the type aliases found in the module `noisy_float::types`.
+/// However, this struct together with a `FloatChecker` implementation can be used
+/// to define custom behavior.
+///
+/// The underlying float type is `F`, usually `f32` or `f64`.
+/// Valid values for the float are determined by the float checker `C`.
+/// If an invalid value would ever be returned from a method on this type,
+/// the method will panic instead, using either `assert!` or `debug_assert!`
+/// as defined by the float checker.
+/// The exception to this rule is for methods that return an `Option` containing
+/// a `NoisyFloat`, in which case the result would be `None` if the value is invalid.
 pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
     value: F,
     checker: PhantomData<C>
 }
 
-//note: not implementing From<F>, because From conversion is never supposed to fail, according to the docs
 impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
+    /// Constructs a new `NoisyFloat` with the given value.
+    ///
+    /// Uses the `FloatChecker` to assert that the value is valid.
     #[inline]
     pub fn new(value: F) -> NoisyFloat<F, C> {
         C::assert(value);
@@ -120,6 +137,9 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         }
     }
     
+    /// Constructs a new `NoisyFloat` with the given value.
+    ///
+    /// Returns `None` if the value is invalid.
     #[inline]
     pub fn try_new(value: F) -> Option<NoisyFloat<F, C>> {
         if C::check(value) {
@@ -132,6 +152,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         }
     }
 
+    /// Returns the underlying float value.
     #[inline]
     pub fn raw(self) -> F {
         self.value

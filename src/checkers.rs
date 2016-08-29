@@ -12,11 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Standard implementations of `FloatChecker`.
+
 extern crate num_traits;
 
 use num_traits::Float;
 use ::FloatChecker;
 
+/// A `FloatChecker` that considers all values valid except NaN.
+///
+/// This checks that the value is a "number", i.e. it is not "not-a-number".
+///
+/// The `assert` method is implemented using `debug_assert!`.
 pub struct NumChecker;
 
 impl<F: Float> FloatChecker<F> for NumChecker {
@@ -31,6 +38,9 @@ impl<F: Float> FloatChecker<F> for NumChecker {
     }
 }
 
+/// A `FloatChecker` that considers all values valid except NaN and +/- Infinity.
+///
+/// The `assert` method is implemented using `debug_assert!`.
 pub struct FiniteChecker;
 
 impl<F: Float> FloatChecker<F> for FiniteChecker {
