@@ -69,14 +69,13 @@ mod float_impl;
 /// Prelude for the `noisy_float` crate.
 ///
 /// This includes all of the types defined in the `noisy_float::types` module,
-/// as well as re-exports of traits from the `num_traits` crate.
-/// It is important to have these re-exports here, because they allow the user
+/// as well as a re-export of the `Float` trait from the `num_traits` crate.
+/// It is important to have this re-export here, because it allows the user
 /// to access common floating point methods like `abs()`, `sqrt()`, etc.
 pub mod prelude {
     pub use types::*;
     
     pub use num_traits::Float;
-    pub use num_traits::cast::{ToPrimitive, NumCast};
 }
 
 use std::marker::PhantomData;
@@ -120,28 +119,28 @@ pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
 }
 
 impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
-    /// Constructs a new `NoisyFloat` with the given value.
+    /// Constructs a `NoisyFloat` with the given value.
     ///
     /// Uses the `FloatChecker` to assert that the value is valid.
     #[inline]
-    pub fn new(value: F) -> NoisyFloat<F, C> {
+    pub fn new(value: F) -> Self {
         C::assert(value);
         Self::unchecked_new(value)
     }
     
     #[inline]
-    fn unchecked_new(value: F) -> NoisyFloat<F, C> {
+    fn unchecked_new(value: F) -> Self {
         NoisyFloat {
             value: value,
             checker: PhantomData
         }
     }
     
-    /// Constructs a new `NoisyFloat` with the given value.
+    /// Tries to construct a `NoisyFloat` with the given value.
     ///
     /// Returns `None` if the value is invalid.
     #[inline]
-    pub fn try_new(value: F) -> Option<NoisyFloat<F, C>> {
+    pub fn try_new(value: F) -> Option<Self> {
         if C::check(value) {
             Some(NoisyFloat {
                 value: value,
@@ -150,6 +149,26 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         } else {
             None
         }
+    }
+    
+    /// Constructs a `NoisyFloat` with the given `f32` value.
+    ///
+    /// May panic not only by the `FloatChecker` but also
+    /// by unwrapping the result of a `NumCast` invocation for type `F`,
+    /// although the later should not occur in normal situations.
+    #[inline]
+    pub fn from_f32(value: f32) -> Self {
+        Self::new(F::from(value).unwrap())
+    }
+    
+    /// Constructs a `NoisyFloat` with the given `f64` value.
+    ///
+    /// May panic not only by the `FloatChecker` but also
+    /// by unwrapping the result of a `NumCast` invocation for type `F`,
+    /// although the later should not occur in normal situations.
+    #[inline]
+    pub fn from_f64(value: f64) -> Self {
+        Self::new(F::from(value).unwrap())
     }
 
     /// Returns the underlying float value.
@@ -222,7 +241,7 @@ mod tests {
         assert!(-value == n64(-3.0));
         assert!(r64(1.0).exp() == r64(consts::E));
         assert!((N64::try_new(1.0).unwrap() / N64::infinity()) == n64(0.0));
-        assert!(NumCast::from(f32::INFINITY) == N64::try_new(f64::INFINITY));
+        assert!(N64::from_f32(f32::INFINITY) == N64::from_f64(f64::INFINITY));
         assert!(R64::try_new(f64::NEG_INFINITY) == None);
         assert!(N64::try_new(f64::NAN) == None);
         assert!(R64::try_new(f64::NAN) == None);
