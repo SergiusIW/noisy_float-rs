@@ -41,11 +41,16 @@
 //! use noisy_float::prelude::*;
 //!
 //! fn geometric_mean(a: R64, b: R64) -> R64 {
-//!     (a * b).sqrt() //used just like regular floating-point numbers
+//!     (a * b).sqrt() //used just like regular floating point numbers
+//! }
+//!
+//! fn mean(a: R64, b: R64) -> R64 {
+//!     (a + b) * 0.5 //the RHS of ops can be the underlying float type
 //! }
 //! 
 //! println!("geometric_mean(10.0, 20.0) = {}", geometric_mean(r64(10.0), r64(20.0)));
 //! //prints 14.142...
+//! assert!(mean(r64(10.0), r64(20.0)) == 15.0);
 //! ```
 //!
 //! An example using the `N32` type, which corresponds to *non-NaN* `f32` values.
@@ -178,21 +183,10 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     }
 }
 
-/// Note: due to complications with Rust's type system, cannot implement `Into` generically like
-/// `impl<F: Float, C: FloatChecker<F>> Into<F> for NoisyFloat<F, C>`.
-impl<C: FloatChecker<f32>> Into<f32> for NoisyFloat<f32, C> {
+impl<F: Float + Default, C: FloatChecker<F>> Default for NoisyFloat<F, C> {
     #[inline]
-    fn into(self) -> f32 {
-        self.value
-    }
-}
-
-/// Note: due to complications with Rust's type system, cannot implement `Into` generically like
-/// `impl<F: Float, C: FloatChecker<F>> Into<F> for NoisyFloat<F, C>`.
-impl<C: FloatChecker<f64>> Into<f64> for NoisyFloat<f64, C> {
-    #[inline]
-    fn into(self) -> f64 {
-        self.value
+    fn default() -> Self {
+        Self::new(F::default())
     }
 }
 
@@ -233,14 +227,14 @@ mod tests {
 
     #[test]
     fn smoke_test() {
-        assert!(n64(1.0) + n64(2.0) == n64(3.0));
+        assert!(n64(1.0) + 2.0 == 3.0);
         assert!(n64(3.0) != n64(2.9));
-        assert!(r64(1.0) < r64(2.0));
+        assert!(r64(1.0) < 2.0);
         let mut value = n64(18.0);
         value %= n64(5.0);
         assert!(-value == n64(-3.0));
-        assert!(r64(1.0).exp() == r64(consts::E));
-        assert!((N64::try_new(1.0).unwrap() / N64::infinity()) == n64(0.0));
+        assert!(r64(1.0).exp() == consts::E);
+        assert!((N64::try_new(1.0).unwrap() / N64::infinity()) == 0.0);
         assert!(N64::from_f32(f32::INFINITY) == N64::from_f64(f64::INFINITY));
         assert!(R64::try_new(f64::NEG_INFINITY) == None);
         assert!(N64::try_new(f64::NAN) == None);

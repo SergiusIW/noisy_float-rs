@@ -15,7 +15,7 @@
 use std::cmp::Ordering;
 use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg};
 use std::num::FpCategory;
-use num_traits::{Float, Num};
+use num_traits::{Float, Num, FloatConst};
 use num_traits::cast::{NumCast, ToPrimitive};
 use num_traits::identities::{Zero, One};
 use ::{FloatChecker, NoisyFloat};
@@ -26,18 +26,30 @@ impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
 
 impl<F: Float, C: FloatChecker<F>> Copy for NoisyFloat<F, C> {}
 
+impl<F: Float, C: FloatChecker<F>> PartialEq<F> for NoisyFloat<F, C> {
+    #[inline] fn eq(&self, other: &F) -> bool { self.value.eq(&other) }
+}
+
 impl<F: Float, C: FloatChecker<F>> PartialEq for NoisyFloat<F, C> {
-    #[inline] fn eq(&self, other: &Self) -> bool { self.value.eq(&other.value) }
+    #[inline] fn eq(&self, other: &Self) -> bool { self.eq(&other.value) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Eq for NoisyFloat<F, C> {}
 
+impl<F: Float, C: FloatChecker<F>> PartialOrd<F> for NoisyFloat<F, C> {
+    #[inline] fn partial_cmp(&self, other: &F) -> Option<Ordering> { self.value.partial_cmp(&other) }
+    #[inline] fn lt(&self, other: &F) -> bool { self.value.lt(&other) }
+    #[inline] fn le(&self, other: &F) -> bool { self.value.le(&other) }
+    #[inline] fn gt(&self, other: &F) -> bool { self.value.gt(&other) }
+    #[inline] fn ge(&self, other: &F) -> bool { self.value.ge(&other) }
+}
+
 impl<F: Float, C: FloatChecker<F>> PartialOrd for NoisyFloat<F, C> {
     #[inline] fn partial_cmp(&self, other: &Self) -> Option<Ordering> { self.value.partial_cmp(&other.value) }
-    #[inline] fn lt(&self, other: &Self) -> bool { self.value.lt(&other.value) }
-    #[inline] fn le(&self, other: &Self) -> bool { self.value.le(&other.value) }
-    #[inline] fn gt(&self, other: &Self) -> bool { self.value.gt(&other.value) }
-    #[inline] fn ge(&self, other: &Self) -> bool { self.value.ge(&other.value) }
+    #[inline] fn lt(&self, other: &Self) -> bool { self.lt(&other.value) }
+    #[inline] fn le(&self, other: &Self) -> bool { self.le(&other.value) }
+    #[inline] fn gt(&self, other: &Self) -> bool { self.gt(&other.value) }
+    #[inline] fn ge(&self, other: &Self) -> bool { self.ge(&other.value) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
@@ -53,49 +65,94 @@ impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
     }
 }
 
+impl<F: Float, C: FloatChecker<F>> Add<F> for NoisyFloat<F, C> {
+    type Output = Self;
+    #[inline] fn add(self, rhs: F) -> Self { Self::new(self.value.add(rhs)) }
+}
+
 impl<F: Float, C: FloatChecker<F>> Add for NoisyFloat<F, C> {
     type Output = Self;
-    #[inline] fn add(self, rhs: Self) -> Self { Self::new(self.value.add(rhs.value)) }
+    #[inline] fn add(self, rhs: Self) -> Self { self.add(rhs.value) }
+}
+
+impl<F: Float, C: FloatChecker<F>> Sub<F> for NoisyFloat<F, C> {
+    type Output = Self;
+    #[inline] fn sub(self, rhs: F) -> Self { Self::new(self.value.sub(rhs)) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Sub for NoisyFloat<F, C> {
     type Output = Self;
-    #[inline] fn sub(self, rhs: Self) -> Self { Self::new(self.value.sub(rhs.value)) }
+    #[inline] fn sub(self, rhs: Self) -> Self { self.sub(rhs.value) }
+}
+
+impl<F: Float, C: FloatChecker<F>> Mul<F> for NoisyFloat<F, C> {
+    type Output = Self;
+    #[inline] fn mul(self, rhs: F) -> Self { Self::new(self.value.mul(rhs)) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Mul for NoisyFloat<F, C> {
     type Output = Self;
-    #[inline] fn mul(self, rhs: Self) -> Self { Self::new(self.value.mul(rhs.value)) }
+    #[inline] fn mul(self, rhs: Self) -> Self { self.mul(rhs.value) }
+}
+
+impl<F: Float, C: FloatChecker<F>> Div<F> for NoisyFloat<F, C> {
+    type Output = Self;
+    #[inline] fn div(self, rhs: F) -> Self { Self::new(self.value.div(rhs)) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Div for NoisyFloat<F, C> {
     type Output = Self;
-    #[inline] fn div(self, rhs: Self) -> Self { Self::new(self.value.div(rhs.value)) }
+    #[inline] fn div(self, rhs: Self) -> Self { self.div(rhs.value) }
+}
+
+impl<F: Float, C: FloatChecker<F>> Rem<F> for NoisyFloat<F, C> {
+    type Output = Self;
+    #[inline] fn rem(self, rhs: F) -> Self { Self::new(self.value.rem(rhs)) }
 }
 
 impl<F: Float, C: FloatChecker<F>> Rem for NoisyFloat<F, C> {
     type Output = Self;
-    #[inline] fn rem(self, rhs: Self) -> Self { Self::new(self.value.rem(rhs.value)) }
+    #[inline] fn rem(self, rhs: Self) -> Self { self.rem(rhs.value) }
+}
+
+impl<F: Float + AddAssign, C: FloatChecker<F>> AddAssign<F> for NoisyFloat<F, C> {
+    #[inline] fn add_assign(&mut self, rhs: F) { self.value.add_assign(rhs); C::assert(self.value); }
 }
 
 impl<F: Float + AddAssign, C: FloatChecker<F>> AddAssign for NoisyFloat<F, C> {
-    #[inline] fn add_assign(&mut self, rhs: Self) { self.value.add_assign(rhs.value); C::assert(self.value); }
+    #[inline] fn add_assign(&mut self, rhs: Self) { self.add_assign(rhs.value); }
+}
+
+impl<F: Float + SubAssign, C: FloatChecker<F>> SubAssign<F> for NoisyFloat<F, C> {
+    #[inline] fn sub_assign(&mut self, rhs: F) { self.value.sub_assign(rhs); C::assert(self.value); }
 }
 
 impl<F: Float + SubAssign, C: FloatChecker<F>> SubAssign for NoisyFloat<F, C> {
-    #[inline] fn sub_assign(&mut self, rhs: Self) { self.value.sub_assign(rhs.value); C::assert(self.value); }
+    #[inline] fn sub_assign(&mut self, rhs: Self) { self.sub_assign(rhs.value); }
+}
+
+impl<F: Float + MulAssign, C: FloatChecker<F>> MulAssign<F> for NoisyFloat<F, C> {
+    #[inline] fn mul_assign(&mut self, rhs: F) { self.value.mul_assign(rhs); C::assert(self.value); }
 }
 
 impl<F: Float + MulAssign, C: FloatChecker<F>> MulAssign for NoisyFloat<F, C> {
-    #[inline] fn mul_assign(&mut self, rhs: Self) { self.value.mul_assign(rhs.value); C::assert(self.value); }
+    #[inline] fn mul_assign(&mut self, rhs: Self) { self.mul_assign(rhs.value); }
+}
+
+impl<F: Float + DivAssign, C: FloatChecker<F>> DivAssign<F> for NoisyFloat<F, C> {
+    #[inline] fn div_assign(&mut self, rhs: F) { self.value.div_assign(rhs); C::assert(self.value); }
 }
 
 impl<F: Float + DivAssign, C: FloatChecker<F>> DivAssign for NoisyFloat<F, C> {
-    #[inline] fn div_assign(&mut self, rhs: Self) { self.value.div_assign(rhs.value); C::assert(self.value); }
+    #[inline] fn div_assign(&mut self, rhs: Self) { self.div_assign(rhs.value); }
+}
+
+impl<F: Float + RemAssign, C: FloatChecker<F>> RemAssign<F> for NoisyFloat<F, C> {
+    #[inline] fn rem_assign(&mut self, rhs: F) { self.value.rem_assign(rhs); C::assert(self.value); }
 }
 
 impl<F: Float + RemAssign, C: FloatChecker<F>> RemAssign for NoisyFloat<F, C> {
-    #[inline] fn rem_assign(&mut self, rhs: Self) { self.value.rem_assign(rhs.value); C::assert(self.value); }
+    #[inline] fn rem_assign(&mut self, rhs: Self) { self.rem_assign(rhs.value); }
 }
 
 impl<F: Float, C: FloatChecker<F>> Neg for NoisyFloat<F, C> {
@@ -193,4 +250,23 @@ impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
     #[inline] fn integer_decode(self) -> (u64, i16, i8) { self.value.integer_decode() }
     #[inline] fn to_degrees(self) -> Self { Self::new(self.value.to_degrees()) }
     #[inline] fn to_radians(self) -> Self { Self::new(self.value.to_radians()) }
+}
+
+impl<F: Float + FloatConst, C: FloatChecker<F>> FloatConst for NoisyFloat<F, C> {
+    #[inline] fn E() -> Self { Self::new(F::E()) }
+    #[inline] fn FRAC_1_PI() -> Self { Self::new(F::FRAC_1_PI()) }
+    #[inline] fn FRAC_1_SQRT_2() -> Self { Self::new(F::FRAC_1_SQRT_2()) }
+    #[inline] fn FRAC_2_PI() -> Self { Self::new(F::FRAC_2_PI()) }
+    #[inline] fn FRAC_2_SQRT_PI() -> Self { Self::new(F::FRAC_2_SQRT_PI()) }
+    #[inline] fn FRAC_PI_2() -> Self { Self::new(F::FRAC_PI_2()) }
+    #[inline] fn FRAC_PI_3() -> Self { Self::new(F::FRAC_PI_3()) }
+    #[inline] fn FRAC_PI_4() -> Self { Self::new(F::FRAC_PI_4()) }
+    #[inline] fn FRAC_PI_6() -> Self { Self::new(F::FRAC_PI_6()) }
+    #[inline] fn FRAC_PI_8() -> Self { Self::new(F::FRAC_PI_8()) }
+    #[inline] fn LN_10() -> Self { Self::new(F::LN_10()) }
+    #[inline] fn LN_2() -> Self { Self::new(F::LN_2()) }
+    #[inline] fn LOG10_E() -> Self { Self::new(F::LOG10_E()) }
+    #[inline] fn LOG2_E() -> Self { Self::new(F::LOG2_E()) }
+    #[inline] fn PI() -> Self { Self::new(F::PI()) }
+    #[inline] fn SQRT_2() -> Self { Self::new(F::SQRT_2()) }
 }
