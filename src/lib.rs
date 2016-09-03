@@ -67,9 +67,9 @@
 
 extern crate num_traits;
 
+mod float_impl;
 pub mod checkers;
 pub mod types;
-mod float_impl;
 
 /// Prelude for the `noisy_float` crate.
 ///

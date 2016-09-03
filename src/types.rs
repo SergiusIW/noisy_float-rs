@@ -71,16 +71,3 @@ pub fn r32(value: f32) -> R32 {
 pub fn r64(value: f64) -> R64 {
     R64::new(value)
 }
-
-
-impl From<R32> for N32 {
-    fn from(value: R32) -> N32 {
-        N32::unchecked_new(value.raw())
-    }
-}
-
-impl From<R64> for N64 {
-    fn from(value: R64) -> N64 {
-        N64::unchecked_new(value.raw())
-    }
-}

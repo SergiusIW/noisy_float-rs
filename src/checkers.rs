@@ -17,7 +17,7 @@
 extern crate num_traits;
 
 use num_traits::Float;
-use ::FloatChecker;
+use ::{FloatChecker, NoisyFloat};
 
 /// A `FloatChecker` that considers all values valid except NaN.
 ///
@@ -52,5 +52,12 @@ impl<F: Float> FloatChecker<F> for FiniteChecker {
     #[inline]
     fn check(value: F) -> bool {
         value.is_finite()
+    }
+}
+
+
+impl<F: Float> From<NoisyFloat<F, FiniteChecker>> for NoisyFloat<F, NumChecker> {
+    fn from(value: NoisyFloat<F, FiniteChecker>) -> Self {
+        Self::unchecked_new(value.raw())
     }
 }
