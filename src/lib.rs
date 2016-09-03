@@ -80,6 +80,7 @@ pub mod types;
 pub mod prelude {
     pub use types::*;
     
+    #[doc(no_inline)]
     pub use num_traits::Float;
 }
 
