@@ -47,7 +47,7 @@
 //! fn mean(a: R64, b: R64) -> R64 {
 //!     (a + b) * 0.5 //the RHS of ops can be the underlying float type
 //! }
-//! 
+//!
 //! println!("geometric_mean(10.0, 20.0) = {}", geometric_mean(r64(10.0), r64(20.0)));
 //! //prints 14.142...
 //! assert!(mean(r64(10.0), r64(20.0)) == 15.0);
@@ -79,7 +79,7 @@ pub mod types;
 /// to access common floating point methods like `abs()`, `sqrt()`, etc.
 pub mod prelude {
     pub use types::*;
-    
+
     #[doc(no_inline)]
     pub use num_traits::Float;
 }
@@ -98,7 +98,7 @@ pub trait FloatChecker<F> {
     /// The only hard requirement is that NaN *must* be considered *invalid*
     /// for all implementations of `FloatChecker`.
     fn check(value: F) -> bool;
-    
+
     /// A function that may panic if the floating point number is *invalid*.
     ///
     /// Should either call `assert!(check(value), ...)` or `debug_assert!(check(value), ...)`.
@@ -119,6 +119,7 @@ pub trait FloatChecker<F> {
 /// as defined by the float checker.
 /// The exception to this rule is for methods that return an `Option` containing
 /// a `NoisyFloat`, in which case the result would be `None` if the value is invalid.
+#[repr(C)]
 pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
     value: F,
     checker: PhantomData<C>
@@ -133,7 +134,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         C::assert(value);
         Self::unchecked_new(value)
     }
-    
+
     #[inline]
     fn unchecked_new(value: F) -> Self {
         NoisyFloat {
@@ -141,7 +142,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
             checker: PhantomData
         }
     }
-    
+
     /// Tries to construct a `NoisyFloat` with the given value.
     ///
     /// Returns `None` if the value is invalid.
@@ -156,7 +157,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
             None
         }
     }
-    
+
     /// Constructs a `NoisyFloat` with the given `f32` value.
     ///
     /// May panic not only by the `FloatChecker` but also
@@ -166,7 +167,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     pub fn from_f32(value: f32) -> Self {
         Self::new(F::from(value).unwrap())
     }
-    
+
     /// Constructs a `NoisyFloat` with the given `f64` value.
     ///
     /// May panic not only by the `FloatChecker` but also
@@ -225,35 +226,45 @@ mod tests {
     use prelude::*;
     use std::f32;
     use std::f64::{self, consts};
+    use std::mem::{size_of, align_of};
 
     #[test]
     fn smoke_test() {
-        assert!(n64(1.0) + 2.0 == 3.0);
-        assert!(n64(3.0) != n64(2.9));
+        assert_eq!(n64(1.0) + 2.0, 3.0);
+        assert_ne!(n64(3.0), n64(2.9));
         assert!(r64(1.0) < 2.0);
         let mut value = n64(18.0);
         value %= n64(5.0);
-        assert!(-value == n64(-3.0));
-        assert!(r64(1.0).exp() == consts::E);
-        assert!((N64::try_new(1.0).unwrap() / N64::infinity()) == 0.0);
-        assert!(N64::from_f32(f32::INFINITY) == N64::from_f64(f64::INFINITY));
-        assert!(R64::try_new(f64::NEG_INFINITY) == None);
-        assert!(N64::try_new(f64::NAN) == None);
-        assert!(R64::try_new(f64::NAN) == None);
+        assert_eq!(-value, n64(-3.0));
+        assert_eq!(r64(1.0).exp(), consts::E);
+        assert_eq!((N64::try_new(1.0).unwrap() / N64::infinity()), 0.0);
+        assert_eq!(N64::from_f32(f32::INFINITY), N64::from_f64(f64::INFINITY));
+        assert_eq!(R64::try_new(f64::NEG_INFINITY), None);
+        assert_eq!(N64::try_new(f64::NAN), None);
+        assert_eq!(R64::try_new(f64::NAN), None);
     }
-    
+
+    #[test]
+    fn ensure_layout() {
+        assert_eq!(size_of::<N32>(), size_of::<f32>());
+        assert_eq!(align_of::<N32>(), align_of::<f32>());
+
+        assert_eq!(size_of::<N64>(), size_of::<f64>());
+        assert_eq!(align_of::<N64>(), align_of::<f64>());
+    }
+
     #[test]
     #[should_panic]
     fn n64_nan() {
         n64(0.0) / n64(0.0);
     }
-    
+
     #[test]
     #[should_panic]
     fn r64_nan() {
         r64(0.0) / r64(0.0);
     }
-    
+
     #[test]
     #[should_panic]
     fn r64_infinity() {
