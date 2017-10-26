@@ -67,6 +67,15 @@
 
 extern crate num_traits;
 
+#[cfg(feature = "serde-1")]
+extern crate serde;
+#[cfg(feature = "serde-1")]
+#[macro_use]
+extern crate serde_derive;
+
+#[cfg(feature = "serde-1")]
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
+
 mod float_impl;
 pub mod checkers;
 pub mod types;
@@ -216,6 +225,21 @@ impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::UpperExp::fmt(&self.value, f)
+    }
+}
+
+#[cfg(feature = "serde-1")]
+impl<F: Float + Serialize, C: FloatChecker<F>> Serialize for NoisyFloat<F, C> {
+    fn serialize<S: Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        self.value.serialize(ser)
+    }
+}
+
+#[cfg(feature = "serde-1")]
+impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for NoisyFloat<F, C> {
+    fn deserialize<D: Deserializer<'de>>(de: D) -> Result<Self, D::Error> {
+        let value = F::deserialize(de)?;
+        Ok(Self::new(value))
     }
 }
 
