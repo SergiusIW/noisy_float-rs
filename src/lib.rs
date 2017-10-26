@@ -66,6 +66,12 @@
 //! ```
 
 extern crate num_traits;
+extern crate approx;
+#[cfg(feature = "algebra")]
+extern crate alga;
+#[cfg(feature = "algebra")]
+#[macro_use]
+extern crate alga_derive;
 
 mod float_impl;
 pub mod checkers;
@@ -87,6 +93,9 @@ pub mod prelude {
 use std::marker::PhantomData;
 use std::fmt;
 use num_traits::Float;
+
+#[cfg(feature = "algebra")]
+use alga::general::{Additive, Multiplicative};
 
 /// Trait for checking whether a floating point number is *valid*.
 ///
@@ -120,6 +129,8 @@ pub trait FloatChecker<F> {
 /// The exception to this rule is for methods that return an `Option` containing
 /// a `NoisyFloat`, in which case the result would be `None` if the value is invalid.
 #[repr(C)]
+#[cfg_attr(feature = "algebra", derive(Alga))]
+#[cfg_attr(feature = "algebra", alga_traits(Field(Additive, Multiplicative)))]
 pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
     value: F,
     checker: PhantomData<C>

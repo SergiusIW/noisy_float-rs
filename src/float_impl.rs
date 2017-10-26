@@ -15,10 +15,204 @@
 use std::cmp::Ordering;
 use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg};
 use std::num::FpCategory;
-use num_traits::{Float, Num, FloatConst};
-use num_traits::cast::{NumCast, ToPrimitive};
+use approx::ApproxEq;
+use num_traits::{Float, Num, FloatConst, Signed, Bounded};
+use num_traits::cast::{NumCast, FromPrimitive, ToPrimitive};
 use num_traits::identities::{Zero, One};
 use ::{FloatChecker, NoisyFloat};
+
+#[cfg(feature = "algebra")]
+mod alga {
+    use num_traits::Float;
+    use num_traits::identities::{Zero, One};
+
+    use alga::general::*;
+
+    use ::{FloatChecker, NoisyFloat};
+
+    impl<F: Float, C: FloatChecker<F>> AbstractMagma<Additive> for NoisyFloat<F, C> {
+        #[inline] fn operate(&self, right: &Self) -> Self {
+            *self + *right
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> AbstractMagma<Multiplicative> for NoisyFloat<F, C> {
+        #[inline] fn operate(&self, right: &Self) -> Self {
+            *self * *right
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> SubsetOf<NoisyFloat<F, C>> for NoisyFloat<F, C> {
+        #[inline] fn to_superset(&self) -> NoisyFloat<F, C> { *self }
+        #[inline] unsafe fn from_superset_unchecked(element: &NoisyFloat<F, C>) -> Self { *element }
+        #[inline] fn is_in_subset(_: &NoisyFloat<F, C>) -> bool { true }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> SubsetOf<NoisyFloat<F, C>> for f64 {
+        #[inline]
+        fn to_superset(&self) -> NoisyFloat<F, C> {
+            NoisyFloat::from_f64(*self)
+        }
+
+        #[inline]
+        unsafe fn from_superset_unchecked(element: &NoisyFloat<F, C>) -> Self {
+            element.raw().to_f64().expect("Casting to f64 should work for generic float.")
+        }
+
+        #[inline]
+        fn is_in_subset(_: &NoisyFloat<F, C>) -> bool {
+            true
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> MeetSemilattice for NoisyFloat<F, C> {
+        #[inline]
+        fn meet(&self, other: &Self) -> Self {
+            if *self <= *other {
+                *self
+            } else {
+                *other
+            }
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> JoinSemilattice for NoisyFloat<F, C> {
+        #[inline]
+        fn join(&self, other: &Self) -> Self {
+            if *self >= *other {
+                *self
+            } else {
+                *other
+            }
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> Lattice for NoisyFloat<F, C> {
+        #[inline]
+        fn meet_join(&self, other: &Self) -> (Self, Self) {
+            if *self >= *other {
+                (*other, *self)
+            } else {
+                (*self, *other)
+            }
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> Identity<Additive> for NoisyFloat<F, C> {
+        #[inline]
+        fn identity() -> Self {
+            Self::zero()
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> Identity<Multiplicative> for NoisyFloat<F, C> {
+        #[inline]
+        fn identity() -> Self {
+            Self::one()
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> Inverse<Additive> for NoisyFloat<F, C> {
+        #[inline]
+        fn inverse(&self) -> Self {
+            -*self
+        }
+    }
+
+    impl<F: Float, C: FloatChecker<F>> Inverse<Multiplicative> for NoisyFloat<F, C> {
+        #[inline]
+        fn inverse(&self) -> Self {
+            Self::one() / *self
+        }
+    }
+
+    impl<F: Float + Real, C: FloatChecker<F> + Sync + Send + 'static> Real for NoisyFloat<F, C>
+    {
+        #[inline] fn floor(self) -> Self { Float::floor(self) }
+        #[inline] fn ceil(self) -> Self { Float::ceil(self) }
+        #[inline] fn round(self) -> Self { Float::round(self) }
+        #[inline] fn trunc(self) -> Self { Float::trunc(self) }
+        #[inline] fn fract(self) -> Self { Float::fract(self) }
+        #[inline] fn abs(self) -> Self { Float::abs(self) }
+        #[inline] fn signum(self) -> Self { Float::signum(self) }
+        #[inline] fn is_sign_positive(self) -> bool { Float::is_sign_positive(self) }
+        #[inline] fn is_sign_negative(self) -> bool { Float::is_sign_negative(self) }
+        #[inline] fn mul_add(self, a: Self, b: Self) -> Self { Float::mul_add(self, a, b) }
+        #[inline] fn recip(self) -> Self { Float::recip(self) }
+        #[inline] fn powi(self, n: i32) -> Self { Float::powi(self, n) }
+        #[inline] fn powf(self, n: Self) -> Self { Float::powf(self, n) }
+        #[inline] fn sqrt(self) -> Self { Float::sqrt(self) }
+        #[inline] fn exp(self) -> Self { Float::exp(self) }
+        #[inline] fn exp2(self) -> Self { Float::exp2(self) }
+        #[inline] fn ln(self) -> Self { Float::ln(self) }
+        #[inline] fn log(self, base: Self) -> Self { Float::log(self, base) }
+        #[inline] fn log2(self) -> Self { Float::log2(self) }
+        #[inline] fn log10(self) -> Self { Float::log10(self) }
+        #[inline] fn max(self, other: Self) -> Self { Float::max(self, other) }
+        #[inline] fn min(self, other: Self) -> Self { Float::min(self, other) }
+        #[inline] fn cbrt(self) -> Self { Float::cbrt(self) }
+        #[inline] fn hypot(self, other: Self) -> Self { Float::hypot(self, other) }
+        #[inline] fn sin(self) -> Self { Float::sin(self) }
+        #[inline] fn cos(self) -> Self { Float::cos(self) }
+        #[inline] fn tan(self) -> Self { Float::tan(self) }
+        #[inline] fn asin(self) -> Self { Float::asin(self) }
+        #[inline] fn acos(self) -> Self { Float::acos(self) }
+        #[inline] fn atan(self) -> Self { Float::atan(self) }
+        #[inline] fn atan2(self, other: Self) -> Self { Float::atan2(self, other) }
+        #[inline] fn sin_cos(self) -> (Self, Self) { Float::sin_cos(self) }
+        #[inline] fn exp_m1(self) -> Self { Float::exp_m1(self) }
+        #[inline] fn ln_1p(self) -> Self { Float::ln_1p(self) }
+        #[inline] fn sinh(self) -> Self { Float::sinh(self) }
+        #[inline] fn cosh(self) -> Self { Float::cosh(self) }
+        #[inline] fn tanh(self) -> Self { Float::tanh(self) }
+        #[inline] fn asinh(self) -> Self { Float::asinh(self) }
+        #[inline] fn acosh(self) -> Self { Float::acosh(self) }
+        #[inline] fn atanh(self) -> Self { Float::atanh(self) }
+        #[inline] fn pi() -> Self { Self::new(F::pi()) }
+        #[inline] fn two_pi() -> Self { Self::new(F::two_pi()) }
+        #[inline] fn frac_pi_2() -> Self { Self::new(F::frac_pi_2()) }
+        #[inline] fn frac_pi_3() -> Self { Self::new(F::frac_pi_3()) }
+        #[inline] fn frac_pi_4() -> Self { Self::new(F::frac_pi_4()) }
+        #[inline] fn frac_pi_6() -> Self { Self::new(F::frac_pi_6()) }
+        #[inline] fn frac_pi_8() -> Self { Self::new(F::frac_pi_8()) }
+        #[inline] fn frac_1_pi() -> Self { Self::new(F::frac_1_pi()) }
+        #[inline] fn frac_2_pi() -> Self { Self::new(F::frac_2_pi()) }
+        #[inline] fn frac_2_sqrt_pi() -> Self { Self::new(F::frac_2_sqrt_pi()) }
+        #[inline] fn e() -> Self { Self::new(F::e()) }
+        #[inline] fn log2_e() -> Self { Self::new(F::log2_e()) }
+        #[inline] fn log10_e() -> Self { Self::new(F::log10_e()) }
+        #[inline] fn ln_2() -> Self { Self::new(F::ln_2()) }
+        #[inline] fn ln_10() -> Self { Self::new(F::ln_10()) }
+    }
+}
+
+impl<F: Float + ApproxEq<Epsilon=F>, C: FloatChecker<F>> ApproxEq for NoisyFloat<F, C> {
+    type Epsilon = Self;
+    #[inline] fn default_epsilon() -> Self::Epsilon { Self::new(F::default_epsilon()) }
+    #[inline] fn default_max_relative() -> Self::Epsilon { Self::new(F::default_max_relative()) }
+    #[inline] fn default_max_ulps() -> u32 { F::default_max_ulps() }
+    #[inline] fn relative_eq(&self, lhs: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool { self.value.relative_eq(&lhs.value, epsilon.value, max_relative.value) }
+    #[inline] fn ulps_eq(&self, lhs: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool { self.value.ulps_eq(&lhs.value, epsilon.value, max_ulps) }
+
+}
+
+impl<F: Float + FromPrimitive, C: FloatChecker<F>> FromPrimitive for NoisyFloat<F, C> {
+    #[inline] fn from_i64(n: i64) -> Option<Self> { F::from_i64(n).map(Self::new) }
+    #[inline] fn from_u64(n: u64) -> Option<Self> { F::from_u64(n).map(Self::new) }
+}
+
+impl<F: Float + Signed, C: FloatChecker<F>> Signed for NoisyFloat<F, C> {
+    #[inline] fn abs(&self) -> Self { Self::new(self.value.abs()) }
+    #[inline] fn abs_sub(&self, lhs: &Self) -> Self { Self::new(self.value.abs_sub(lhs.value)) }
+    #[inline] fn signum(&self) -> Self { Self::new(self.value.signum()) }
+    #[inline] fn is_positive(&self) -> bool { self.value.is_positive() }
+    #[inline] fn is_negative(&self) -> bool { self.value.is_negative() }
+}
+
+impl<F: Float + Bounded, C: FloatChecker<F>> Bounded for NoisyFloat<F, C> {
+    #[inline] fn min_value() -> Self { Self::new(Bounded::min_value()) }
+    #[inline] fn max_value() -> Self { Self::new(Bounded::max_value()) }
+}
 
 impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
     #[inline] fn clone(&self) -> Self { Self::unchecked_new(self.value) }
@@ -52,9 +246,7 @@ impl<F: Float, C: FloatChecker<F>> PartialOrd for NoisyFloat<F, C> {
     #[inline] fn ge(&self, other: &Self) -> bool { self.ge(&other.value) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
-    #[inline]
-    fn cmp(&self, other: &Self) -> Ordering {
+impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {    fn cmp(&self, other: &Self) -> Ordering {
         if self.value < other.value {
             Ordering::Less
         } else if self.value == other.value {
