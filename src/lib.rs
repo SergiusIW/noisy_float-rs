@@ -68,6 +68,9 @@
 extern crate num_traits;
 
 #[cfg(test)]
+#[macro_use]
+extern crate serde_derive;
+#[cfg(test)]
 extern crate serde_json;
 #[cfg(feature = "serde-1")]
 extern crate serde;
@@ -302,6 +305,37 @@ mod tests {
         let should_be = R32::new(3.14);
 
         let got: R32 = serde_json::from_str(src).unwrap();
+        assert_eq!(got, should_be);
+    }
+
+    // Make sure you can use serde_derive with noisy floats.
+    #[cfg(feature = "serde-1")]
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    struct Dummy {
+        value: N64,
+    }
+
+    #[cfg(feature = "serde-1")]
+    #[test]
+    fn deserialize_struct_containing_n64() {
+        let src = r#"{ "value": 3.14 }"#;
+        let should_be = Dummy {
+            value: n64(3.14),
+        };
+
+        let got: Dummy = serde_json::from_str(src).unwrap();
+        assert_eq!(got, should_be);
+    }
+
+    #[cfg(feature = "serde-1")]
+    #[test]
+    fn serialize_struct_containing_n64() {
+        let src = Dummy {
+            value: n64(3.14),
+        };
+        let should_be = r#"{"value":3.14}"#;
+
+        let got = serde_json::to_string(&src).unwrap();
         assert_eq!(got, should_be);
     }
 }
