@@ -64,8 +64,26 @@
 //! assert!(values.iter().cloned().min() == Some(n32(-1.5)));
 //! assert!(values.iter().cloned().max() == Some(N32::infinity()));
 //! ```
+//! 
+//! # Features
+//!
+//! This crate has the following cargo features:
+//!
+//! - `serde-1`: Enable serialization for all `NoisyFloats` using serde 1.0 and
+//!   will transparently serialize then as floats
 
 extern crate num_traits;
+
+#[cfg(test)]
+#[macro_use]
+extern crate serde_derive;
+#[cfg(test)]
+extern crate serde_json;
+#[cfg(feature = "serde-1")]
+extern crate serde;
+
+#[cfg(feature = "serde-1")]
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
 
 mod float_impl;
 pub mod checkers;
@@ -219,9 +237,26 @@ impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<
     }
 }
 
+#[cfg(feature = "serde-1")]
+impl<F: Float + Serialize, C: FloatChecker<F>> Serialize for NoisyFloat<F, C> {
+    fn serialize<S: Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        self.value.serialize(ser)
+    }
+}
+
+#[cfg(feature = "serde-1")]
+impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for NoisyFloat<F, C> {
+    fn deserialize<D: Deserializer<'de>>(de: D) -> Result<Self, D::Error> {
+        let value = F::deserialize(de)?;
+        Ok(Self::new(value))
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "serde-1")]
+    use serde_json;
     use prelude::*;
     use std::f32;
     use std::f64::{self, consts};
@@ -258,5 +293,56 @@ mod tests {
     #[should_panic]
     fn r64_infinity() {
         r64(1.0) / r64(0.0);
+    }
+
+    #[cfg(feature = "serde-1")]
+    #[test]
+    fn serialize_transparently_as_float() {
+        let num = R32::new(3.14);
+        let should_be = "3.14";
+
+        let got = serde_json::to_string(&num).unwrap();
+        assert_eq!(got, should_be);
+    }
+
+    #[cfg(feature = "serde-1")]
+    #[test]
+    fn deserialize_transparently_as_float() {
+        let src = "3.14";
+        let should_be = R32::new(3.14);
+
+        let got: R32 = serde_json::from_str(src).unwrap();
+        assert_eq!(got, should_be);
+    }
+
+    // Make sure you can use serde_derive with noisy floats.
+    #[cfg(feature = "serde-1")]
+    #[derive(Debug, PartialEq, Serialize, Deserialize)]
+    struct Dummy {
+        value: N64,
+    }
+
+    #[cfg(feature = "serde-1")]
+    #[test]
+    fn deserialize_struct_containing_n64() {
+        let src = r#"{ "value": 3.14 }"#;
+        let should_be = Dummy {
+            value: n64(3.14),
+        };
+
+        let got: Dummy = serde_json::from_str(src).unwrap();
+        assert_eq!(got, should_be);
+    }
+
+    #[cfg(feature = "serde-1")]
+    #[test]
+    fn serialize_struct_containing_n64() {
+        let src = Dummy {
+            value: n64(3.14),
+        };
+        let should_be = r#"{"value":3.14}"#;
+
+        let got = serde_json::to_string(&src).unwrap();
+        assert_eq!(got, should_be);
     }
 }
