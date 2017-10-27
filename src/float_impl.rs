@@ -193,7 +193,6 @@ impl<F: Float + ApproxEq<Epsilon=F>, C: FloatChecker<F>> ApproxEq for NoisyFloat
     #[inline] fn default_max_ulps() -> u32 { F::default_max_ulps() }
     #[inline] fn relative_eq(&self, lhs: &Self, epsilon: Self::Epsilon, max_relative: Self::Epsilon) -> bool { self.value.relative_eq(&lhs.value, epsilon.value, max_relative.value) }
     #[inline] fn ulps_eq(&self, lhs: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool { self.value.ulps_eq(&lhs.value, epsilon.value, max_ulps) }
-
 }
 
 impl<F: Float + FromPrimitive, C: FloatChecker<F>> FromPrimitive for NoisyFloat<F, C> {
@@ -246,7 +245,9 @@ impl<F: Float, C: FloatChecker<F>> PartialOrd for NoisyFloat<F, C> {
     #[inline] fn ge(&self, other: &Self) -> bool { self.ge(&other.value) }
 }
 
-impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {    fn cmp(&self, other: &Self) -> Ordering {
+impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
+    #[inline]
+    fn cmp(&self, other: &Self) -> Ordering {
         if self.value < other.value {
             Ordering::Less
         } else if self.value == other.value {
