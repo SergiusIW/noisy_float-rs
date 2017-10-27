@@ -64,6 +64,13 @@
 //! assert!(values.iter().cloned().min() == Some(n32(-1.5)));
 //! assert!(values.iter().cloned().max() == Some(N32::infinity()));
 //! ```
+//! 
+//! # Features
+//!
+//! This crate has the following cargo features:
+//!
+//! - `serde-1`: Enable serialization for all `NoisyFloats` using serde 1.0 and
+//!   will transparently serialize then as floats
 
 extern crate num_traits;
 
