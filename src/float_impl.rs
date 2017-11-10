@@ -277,9 +277,7 @@ impl<F: Float, C: FloatChecker<F>> iter::Sum for NoisyFloat<F, C> {
     where
         I: Iterator<Item = Self>,
     {
-        // the sum of a finite list of reals must be real,
-        // and the sum of a finite list of non-NaN must be non-NaN
-        Self::unchecked_new(iter.map(|i| i.raw()).fold(F::zero(), |acc, i| acc + i))
+        Self::new(iter.map(|i| i.raw()).fold(F::zero(), |acc, i| acc + i))
     }
 }
 
@@ -288,8 +286,6 @@ impl<F: Float, C: FloatChecker<F>> iter::Product for NoisyFloat<F, C> {
     where
         I: Iterator<Item = Self>,
     {
-        // the product of a finite list of reals must be real,
-        // and the product of a finite list of non-NaN must be non-NaN
-        Self::unchecked_new(iter.map(|i| i.raw()).fold(F::one(), |acc, i| acc * i))
+        Self::new(iter.map(|i| i.raw()).fold(F::one(), |acc, i| acc * i))
     }
 }
