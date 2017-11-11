@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::cmp::Ordering;
+use std::iter;
 use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg};
 use std::num::FpCategory;
 use num_traits::{Float, Num, FloatConst};
@@ -269,4 +270,22 @@ impl<F: Float + FloatConst, C: FloatChecker<F>> FloatConst for NoisyFloat<F, C> 
     #[inline] fn LOG2_E() -> Self { Self::new(F::LOG2_E()) }
     #[inline] fn PI() -> Self { Self::new(F::PI()) }
     #[inline] fn SQRT_2() -> Self { Self::new(F::SQRT_2()) }
+}
+
+impl<F: Float, C: FloatChecker<F>> iter::Sum for NoisyFloat<F, C> {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        Self::new(iter.map(|i| i.raw()).fold(F::zero(), |acc, i| acc + i))
+    }
+}
+
+impl<F: Float, C: FloatChecker<F>> iter::Product for NoisyFloat<F, C> {
+    fn product<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        Self::new(iter.map(|i| i.raw()).fold(F::one(), |acc, i| acc * i))
+    }
 }
