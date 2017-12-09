@@ -64,7 +64,7 @@
 //! assert!(values.iter().cloned().min() == Some(n32(-1.5)));
 //! assert!(values.iter().cloned().max() == Some(N32::infinity()));
 //! ```
-//! 
+//!
 //! # Features
 //!
 //! This crate has the following cargo features:
@@ -201,6 +201,18 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     pub fn raw(self) -> F {
         self.value
     }
+
+    /// Compares and returns the minimum of two values.
+    ///
+    /// This method exists to disambiguate between `num_traits::Float.min` and `std::cmp::Ord.min`.
+    #[inline]
+    pub fn min(self, other: Self) -> Self { Ord::min(self, other) }
+
+    /// Compares and returns the maximum of two values.
+    ///
+    /// This method exists to disambiguate between `num_traits::Float.max` and `std::cmp::Ord.max`.
+    #[inline]
+    pub fn max(self, other: Self) -> Self { Ord::max(self, other) }
 }
 
 impl<F: Float + Default, C: FloatChecker<F>> Default for NoisyFloat<F, C> {
@@ -258,7 +270,7 @@ impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for 
 mod tests {
     #[cfg(feature = "serde-1")]
     use serde_json;
-    use prelude::*;
+    use ::prelude::*;
     use std::f32;
     use std::f64::{self, consts};
     use std::mem::{size_of, align_of};
@@ -304,6 +316,12 @@ mod tests {
     #[should_panic]
     fn r64_infinity() {
         r64(1.0) / r64(0.0);
+    }
+
+    #[test]
+    fn resolves_min_max() {
+        assert_eq!(r64(1.0).min(r64(3.0)), r64(1.0));
+        assert_eq!(r64(1.0).max(r64(3.0)), r64(3.0));
     }
 
     #[cfg(feature = "serde-1")]
