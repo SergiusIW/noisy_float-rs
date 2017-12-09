@@ -301,18 +301,21 @@ mod tests {
     }
 
     #[test]
+    #[cfg(debug_assertions)]
     #[should_panic]
     fn n64_nan() {
         n64(0.0) / n64(0.0);
     }
 
     #[test]
+    #[cfg(debug_assertions)]
     #[should_panic]
     fn r64_nan() {
         r64(0.0) / r64(0.0);
     }
 
     #[test]
+    #[cfg(debug_assertions)]
     #[should_panic]
     fn r64_infinity() {
         r64(1.0) / r64(0.0);
