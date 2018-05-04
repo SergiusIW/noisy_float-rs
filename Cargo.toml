@@ -10,7 +10,7 @@ keywords = ["float", "signaling", "NaN", "finite", "panic"]
 license = "Apache-2.0"
 
 [dependencies]
-num-traits = "^0.1.35"
+num-traits = "0.2"
 serde = { version = "1.0", optional = true }
 
 [dev-dependencies]

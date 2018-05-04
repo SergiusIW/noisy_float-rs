@@ -249,6 +249,7 @@ impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
     #[inline] fn acosh(self) -> Self { Self::new(self.value.acosh()) }
     #[inline] fn atanh(self) -> Self { Self::new(self.value.atanh()) }
     #[inline] fn integer_decode(self) -> (u64, i16, i8) { self.value.integer_decode() }
+    #[inline] fn epsilon() -> Self { Self::new(F::epsilon()) }
     #[inline] fn to_degrees(self) -> Self { Self::new(self.value.to_degrees()) }
     #[inline] fn to_radians(self) -> Self { Self::new(self.value.to_radians()) }
 }

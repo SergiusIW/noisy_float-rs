@@ -327,6 +327,12 @@ mod tests {
         assert_eq!(r64(1.0).max(r64(3.0)), r64(3.0));
     }
 
+    #[test]
+    fn epsilon() {
+        assert_eq!(R32::epsilon(), f32::EPSILON);
+        assert_eq!(R64::epsilon(), f64::EPSILON);
+    }
+
     #[cfg(feature = "serde-1")]
     #[test]
     fn serialize_transparently_as_float() {
