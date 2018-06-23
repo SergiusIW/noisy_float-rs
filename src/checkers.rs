@@ -1,4 +1,4 @@
-// Copyright 2016 Matthew D. Michelotti
+// Copyright 2016-2018 Matthew D. Michelotti
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ impl<F: Float> FloatChecker<F> for NumChecker {
     fn assert(value: F) {
         debug_assert!(Self::check(value), "unexpected NaN");
     }
-    
+
     #[inline]
     fn check(value: F) -> bool {
         !value.is_nan()
@@ -48,7 +48,7 @@ impl<F: Float> FloatChecker<F> for FiniteChecker {
     fn assert(value: F) {
         debug_assert!(Self::check(value), "unexpected NaN or infinity");
     }
-    
+
     #[inline]
     fn check(value: F) -> bool {
         value.is_finite()

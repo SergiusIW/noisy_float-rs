@@ -1,4 +1,4 @@
-// Copyright 2016 Matthew D. Michelotti
+// Copyright 2016-2018 Matthew D. Michelotti
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ use std::cmp::Ordering;
 use std::iter;
 use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg};
 use std::num::FpCategory;
+use std::hash::{Hash, Hasher};
+use std::mem::transmute;
 use num_traits::{Float, Num, FloatConst};
 use num_traits::cast::{NumCast, ToPrimitive};
 use num_traits::identities::{Zero, One};
@@ -65,6 +67,32 @@ impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
         }
     }
 }
+
+impl<C: FloatChecker<f32>> Hash for NoisyFloat<f32, C> {
+    #[inline]
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let bits = if self.value == 0.0 {
+            0 // this accounts for +0.0 and -0.0
+        } else {
+            unsafe { transmute::<f32, u32>(self.value) }
+        };
+        bits.hash(state);
+    }
+}
+
+impl<C: FloatChecker<f64>> Hash for NoisyFloat<f64, C> {
+    #[inline]
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let bits = if self.value == 0.0 {
+            0 // this accounts for +0.0 and -0.0
+        } else {
+            unsafe { transmute::<f64, u64>(self.value) }
+        };
+        bits.hash(state);
+    }
+}
+
+// TODO why is `impl<F: Float + Hash, C: FloatChecker<F>> Hash for NoisyFloat<F, C>` considered conflicting?
 
 impl<F: Float, C: FloatChecker<F>> Add<F> for NoisyFloat<F, C> {
     type Output = Self;

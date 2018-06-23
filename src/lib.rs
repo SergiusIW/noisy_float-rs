@@ -1,4 +1,4 @@
-// Copyright 2016 Matthew D. Michelotti
+// Copyright 2016-2018 Matthew D. Michelotti
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -274,6 +274,7 @@ mod tests {
     use std::f32;
     use std::f64::{self, consts};
     use std::mem::{size_of, align_of};
+    use std::hash::{Hash, Hasher};
 
     #[test]
     fn smoke_test() {
@@ -331,6 +332,36 @@ mod tests {
     fn epsilon() {
         assert_eq!(R32::epsilon(), f32::EPSILON);
         assert_eq!(R64::epsilon(), f64::EPSILON);
+    }
+
+    struct TestHasher { bytes: Vec<u8> }
+
+    impl Hasher for TestHasher {
+        fn finish(&self) -> u64 { panic!("unexpected Hasher.finish invocation") }
+        fn write(&mut self, bytes: &[u8]) { self.bytes.extend_from_slice(bytes) }
+    }
+
+    fn hash_bytes<T: Hash>(value: T) -> Vec<u8> {
+        let mut hasher = TestHasher { bytes: Vec::new() };
+        value.hash(&mut hasher);
+        hasher.bytes
+    }
+
+    #[test]
+    fn test_hash() {
+        assert_eq!(hash_bytes(r64(10.3)), hash_bytes(10.3f64.to_bits()));
+        assert_ne!(hash_bytes(r64(10.3)), hash_bytes(10.4f64.to_bits()));
+        assert_eq!(hash_bytes(r32(10.3)), hash_bytes(10.3f32.to_bits()));
+        assert_ne!(hash_bytes(r32(10.3)), hash_bytes(10.4f32.to_bits()));
+
+        assert_eq!(hash_bytes(N64::infinity()), hash_bytes(f64::INFINITY.to_bits()));
+        assert_eq!(hash_bytes(N64::neg_infinity()), hash_bytes(f64::NEG_INFINITY.to_bits()));
+
+        // positive and negative zero should have the same hashes
+        assert_eq!(hash_bytes(r64(0.0)), hash_bytes(0.0f64.to_bits()));
+        assert_eq!(hash_bytes(r64(-0.0)), hash_bytes(0.0f64.to_bits()));
+        assert_eq!(hash_bytes(r32(0.0)), hash_bytes(0.0f32.to_bits()));
+        assert_eq!(hash_bytes(r32(-0.0)), hash_bytes(0.0f32.to_bits()));
     }
 
     #[cfg(feature = "serde-1")]
