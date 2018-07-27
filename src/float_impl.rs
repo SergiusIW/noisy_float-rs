@@ -18,7 +18,7 @@ use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssi
 use std::num::FpCategory;
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
-use num_traits::{Float, Num, FloatConst};
+use num_traits::{Float, Num, FloatConst, Signed};
 use num_traits::cast::{NumCast, ToPrimitive};
 use num_traits::identities::{Zero, One};
 use ::{FloatChecker, NoisyFloat};
@@ -299,6 +299,14 @@ impl<F: Float + FloatConst, C: FloatChecker<F>> FloatConst for NoisyFloat<F, C> 
     #[inline] fn LOG2_E() -> Self { Self::new(F::LOG2_E()) }
     #[inline] fn PI() -> Self { Self::new(F::PI()) }
     #[inline] fn SQRT_2() -> Self { Self::new(F::SQRT_2()) }
+}
+
+impl<F: Float + Signed, C: FloatChecker<F>> Signed for NoisyFloat<F, C> {
+    #[inline] fn abs(&self) -> Self { Self::new(self.value.abs()) }
+    #[inline] fn abs_sub(&self, other: &Self) -> Self { Self::new(self.value.abs_sub(other.value)) }
+    #[inline] fn signum(&self) -> Self { Self::new(self.value.signum()) }
+    #[inline] fn is_positive(&self) -> bool { self.value.is_positive() }
+    #[inline] fn is_negative(&self) -> bool { self.value.is_negative() }
 }
 
 impl<F: Float, C: FloatChecker<F>> iter::Sum for NoisyFloat<F, C> {
