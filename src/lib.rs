@@ -31,8 +31,8 @@
 //! but during a release run there is *no overhead* for using these floating
 //! point types compared to using `f32` or `f64` directly.
 //!
-//! This crate makes use of the number, signed and floating point traits in the
-//! popular `num_traits` crate.
+//! This crate makes use of the num, bounded, signed and floating point traits 
+//! in the popular `num_traits` crate.
 //!
 //! #Examples
 //! An example using the `R64` type, which corresponds to *finite* `f64` values.
