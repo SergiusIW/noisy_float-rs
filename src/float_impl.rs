@@ -18,7 +18,7 @@ use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssi
 use std::num::FpCategory;
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
-use num_traits::{Float, Num, FloatConst, Signed};
+use num_traits::{Bounded, Float, Num, FloatConst, Signed};
 use num_traits::cast::{NumCast, ToPrimitive};
 use num_traits::identities::{Zero, One};
 use ::{FloatChecker, NoisyFloat};
@@ -307,6 +307,11 @@ impl<F: Float + Signed, C: FloatChecker<F>> Signed for NoisyFloat<F, C> {
     #[inline] fn signum(&self) -> Self { Self::new(self.value.signum()) }
     #[inline] fn is_positive(&self) -> bool { self.value.is_positive() }
     #[inline] fn is_negative(&self) -> bool { self.value.is_negative() }
+}
+
+impl<F: Float + Bounded, C: FloatChecker<F>> Bounded for NoisyFloat<F, C> {
+    #[inline] fn min_value() -> Self { Self::new(Float::min_value()) }
+    #[inline] fn max_value() -> Self { Self::new(Float::max_value()) }
 }
 
 impl<F: Float, C: FloatChecker<F>> iter::Sum for NoisyFloat<F, C> {

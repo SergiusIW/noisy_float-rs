@@ -28,7 +28,7 @@ numbers have valid values,
 but during a release run there is *no overhead* for using these floating
 point types compared to using `f32` or `f64` directly.
 
-This crate makes use of the floating point and number traits in the
+This crate makes use of the num, bounded, signed and floating point traits in the
 popular `num_traits` crate.
 
 ### Examples
