@@ -137,7 +137,7 @@ pub trait FloatChecker<F> {
 /// as defined by the float checker.
 /// The exception to this rule is for methods that return an `Option` containing
 /// a `NoisyFloat`, in which case the result would be `None` if the value is invalid.
-#[repr(C)]
+#[repr(transparent)]
 pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
     value: F,
     checker: PhantomData<C>
