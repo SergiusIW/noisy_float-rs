@@ -19,7 +19,7 @@ use std::num::FpCategory;
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
 use num_traits::{Bounded, Float, Num, FloatConst, Signed};
-use num_traits::cast::{NumCast, ToPrimitive};
+use num_traits::cast::{NumCast, FromPrimitive, ToPrimitive};
 use num_traits::identities::{Zero, One};
 use ::{FloatChecker, NoisyFloat};
 
@@ -216,6 +216,23 @@ impl<F: Float, C: FloatChecker<F>> ToPrimitive for NoisyFloat<F, C> {
     #[inline] fn to_u32(&self) -> Option<u32> { self.value.to_u32() }
     #[inline] fn to_f32(&self) -> Option<f32> { self.value.to_f32() }
     #[inline] fn to_f64(&self) -> Option<f64> { self.value.to_f64() }
+}
+
+impl<F: Float + FromPrimitive, C: FloatChecker<F>> FromPrimitive for NoisyFloat<F, C> {
+    #[inline] fn from_isize(n: isize) -> Option<Self> { Self::try_new(F::from_isize(n)?) }
+    #[inline] fn from_i8(n: i8) -> Option<Self> { Self::try_new(F::from_i8(n)?) }
+    #[inline] fn from_i16(n: i16) -> Option<Self> { Self::try_new(F::from_i16(n)?) }
+    #[inline] fn from_i32(n: i32) -> Option<Self> { Self::try_new(F::from_i32(n)?) }
+    #[inline] fn from_i64(n: i64) -> Option<Self> { Self::try_new(F::from_i64(n)?) }
+    #[inline] fn from_i128(n: i128) -> Option<Self> { Self::try_new(F::from_i128(n)?) }
+    #[inline] fn from_usize(n: usize) -> Option<Self> { Self::try_new(F::from_usize(n)?) }
+    #[inline] fn from_u8(n: u8) -> Option<Self> { Self::try_new(F::from_u8(n)?) }
+    #[inline] fn from_u16(n: u16) -> Option<Self> { Self::try_new(F::from_u16(n)?) }
+    #[inline] fn from_u32(n: u32) -> Option<Self> { Self::try_new(F::from_u32(n)?) }
+    #[inline] fn from_u64(n: u64) -> Option<Self> { Self::try_new(F::from_u64(n)?) }
+    #[inline] fn from_u128(n: u128) -> Option<Self> { Self::try_new(F::from_u128(n)?) }
+    #[inline] fn from_f32(n: f32) -> Option<Self> { Self::try_new(F::from_f32(n)?) }
+    #[inline] fn from_f64(n: f64) -> Option<Self> { Self::try_new(F::from_f64(n)?) }
 }
 
 impl<F: Float, C: FloatChecker<F>> NumCast for NoisyFloat<F, C> {
