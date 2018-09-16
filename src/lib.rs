@@ -176,6 +176,62 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         }
     }
 
+    /// Converts the value in-place to a reference to a `NoisyFloat`.
+    ///
+    /// Uses the `FloatChecker` to assert that the value is valid.
+    #[inline]
+    pub fn borrowed(value: &F) -> &Self {
+        C::assert(*value);
+        Self::unchecked_borrowed(value)
+    }
+
+    #[inline]
+    fn unchecked_borrowed(value: &F) -> &Self {
+        // This is safe because `NoisyFloat` is a thin wrapper around the
+        // floating-point type.
+        unsafe { &*(value as *const F as *const Self) }
+    }
+
+    /// Tries to convert the value in-place to a reference to a `NoisyFloat`.
+    ///
+    /// Returns `None` if the value is invalid.
+    #[inline]
+    pub fn try_borrowed(value: &F) -> Option<&Self> {
+        if C::check(*value) {
+            Some(Self::unchecked_borrowed(value))
+        } else {
+            None
+        }
+    }
+
+    /// Converts the value in-place to a mutable reference to a `NoisyFloat`.
+    ///
+    /// Uses the `FloatChecker` to assert that the value is valid.
+    #[inline]
+    pub fn borrowed_mut(value: &mut F) -> &mut Self {
+        C::assert(*value);
+        Self::unchecked_borrowed_mut(value)
+    }
+
+    #[inline]
+    fn unchecked_borrowed_mut(value: &mut F) -> &mut Self {
+        // This is safe because `NoisyFloat` is a thin wrapper around the
+        // floating-point type.
+        unsafe { &mut *(value as *mut F as *mut Self) }
+    }
+
+    /// Tries to convert the value in-place to a mutable reference to a `NoisyFloat`.
+    ///
+    /// Returns `None` if the value is invalid.
+    #[inline]
+    pub fn try_borrowed_mut(value: &mut F) -> Option<&mut Self> {
+        if C::check(*value) {
+            Some(Self::unchecked_borrowed_mut(value))
+        } else {
+            None
+        }
+    }
+
     /// Constructs a `NoisyFloat` with the given `f32` value.
     ///
     /// May panic not only by the `FloatChecker` but also
@@ -290,6 +346,8 @@ mod tests {
         assert_eq!(R64::try_new(f64::NEG_INFINITY), None);
         assert_eq!(N64::try_new(f64::NAN), None);
         assert_eq!(R64::try_new(f64::NAN), None);
+        assert_eq!(N64::try_borrowed(&f64::NAN), None);
+        assert_eq!(N64::try_borrowed_mut(&mut f64::NAN), None);
     }
 
     #[test]
@@ -299,6 +357,13 @@ mod tests {
 
         assert_eq!(size_of::<N64>(), size_of::<f64>());
         assert_eq!(align_of::<N64>(), align_of::<f64>());
+    }
+
+    #[test]
+    fn borrowed_casts() {
+        assert_eq!(R64::borrowed(&3.14), &3.14);
+        assert_eq!(N64::borrowed(&[f64::INFINITY; 2][0]), &f64::INFINITY);
+        assert_eq!(N64::borrowed_mut(&mut 2.72), &mut 2.72);
     }
 
     #[test]

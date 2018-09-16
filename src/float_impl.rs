@@ -29,6 +29,12 @@ impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
 
 impl<F: Float, C: FloatChecker<F>> Copy for NoisyFloat<F, C> {}
 
+impl<F: Float, C: FloatChecker<F>> AsRef<F> for NoisyFloat<F, C> {
+    fn as_ref(&self) -> &F {
+        &self.value
+    }
+}
+
 impl<F: Float, C: FloatChecker<F>> PartialEq<F> for NoisyFloat<F, C> {
     #[inline] fn eq(&self, other: &F) -> bool { self.value.eq(&other) }
 }
