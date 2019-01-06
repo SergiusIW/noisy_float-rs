@@ -74,14 +74,6 @@
 
 extern crate num_traits;
 
-#[cfg(test)]
-#[macro_use]
-extern crate serde_derive;
-#[cfg(test)]
-extern crate serde_json;
-#[cfg(feature = "serde-1")]
-extern crate serde;
-
 #[cfg(feature = "serde-1")]
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 
@@ -326,6 +318,8 @@ impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for 
 mod tests {
     #[cfg(feature = "serde-1")]
     use serde_json;
+    #[cfg(feature = "serde-1")]
+    use serde_derive::{Serialize, Deserialize};
     use crate::prelude::*;
     use std::f32;
     use std::f64::{self, consts};
