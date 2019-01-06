@@ -17,7 +17,7 @@
 extern crate num_traits;
 
 use num_traits::Float;
-use ::{FloatChecker, NoisyFloat};
+use crate::{FloatChecker, NoisyFloat};
 
 /// A `FloatChecker` that considers all values valid except NaN.
 ///

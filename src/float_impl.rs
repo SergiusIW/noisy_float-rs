@@ -21,7 +21,7 @@ use std::mem::transmute;
 use num_traits::{Bounded, Float, Num, FloatConst, Signed};
 use num_traits::cast::{NumCast, FromPrimitive, ToPrimitive};
 use num_traits::identities::{Zero, One};
-use ::{FloatChecker, NoisyFloat};
+use crate::{FloatChecker, NoisyFloat};
 
 impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
     #[inline] fn clone(&self) -> Self { Self::unchecked_new(self.value) }

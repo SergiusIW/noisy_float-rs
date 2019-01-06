@@ -96,7 +96,7 @@ pub mod types;
 /// It is important to have this re-export here, because it allows the user
 /// to access common floating point methods like `abs()`, `sqrt()`, etc.
 pub mod prelude {
-    pub use types::*;
+    pub use crate::types::*;
 
     #[doc(no_inline)]
     pub use num_traits::Float;
@@ -326,7 +326,7 @@ impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for 
 mod tests {
     #[cfg(feature = "serde-1")]
     use serde_json;
-    use ::prelude::*;
+    use crate::prelude::*;
     use std::f32;
     use std::f64::{self, consts};
     use std::mem::{size_of, align_of};

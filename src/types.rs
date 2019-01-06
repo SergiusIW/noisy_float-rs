@@ -20,8 +20,8 @@
 
 extern crate num_traits;
 
-use ::NoisyFloat;
-use checkers::{NumChecker, FiniteChecker};
+use crate::NoisyFloat;
+use crate::checkers::{NumChecker, FiniteChecker};
 
 /// A floating point number behaving like `f32` that does not allow NaN.
 ///
