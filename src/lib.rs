@@ -361,6 +361,13 @@ mod tests {
     }
 
     #[test]
+    fn test_convert() {
+        assert_eq!(f32::from(r32(3.0)), 3.0f32);
+        assert_eq!(f64::from(r32(5.0)), 5.0f64);
+        assert_eq!(f64::from(r64(7.0)), 7.0f64);
+    }
+
+    #[test]
     #[cfg(debug_assertions)]
     #[should_panic]
     fn n64_nan() {
