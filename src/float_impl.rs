@@ -18,6 +18,7 @@ use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssi
 use std::num::FpCategory;
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
+use std::convert::From;
 use num_traits::{Bounded, Float, Num, FloatConst, Signed};
 use num_traits::cast::{NumCast, FromPrimitive, ToPrimitive};
 use num_traits::identities::{Zero, One};
@@ -338,6 +339,24 @@ impl<F: Float + FromPrimitive, C: FloatChecker<F>> FromPrimitive for NoisyFloat<
 
 impl<F: Float, C: FloatChecker<F>> NumCast for NoisyFloat<F, C> {
     #[inline] fn from<T: ToPrimitive>(n: T) -> Option<Self> { F::from(n).and_then(|v| Self::try_new(v)) }
+}
+
+impl<C: FloatChecker<f32>> From<NoisyFloat<f32, C>> for f32 {
+    #[inline] fn from(n: NoisyFloat<f32, C>) -> Self {
+        n.value
+    }
+}
+
+impl<C: FloatChecker<f64>> From<NoisyFloat<f64, C>> for f64 {
+    #[inline] fn from(n: NoisyFloat<f64, C>) -> Self {
+        n.value
+    }
+}
+
+impl<C: FloatChecker<f32>> From<NoisyFloat<f32, C>> for f64 {
+    #[inline] fn from(n: NoisyFloat<f32, C>) -> Self {
+        n.value as f64
+    }
 }
 
 impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
