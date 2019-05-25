@@ -34,7 +34,7 @@
 //! This crate makes use of the num, bounded, signed and floating point traits 
 //! in the popular `num_traits` crate.
 //!
-//! #Examples
+//! # Examples
 //! An example using the `R64` type, which corresponds to *finite* `f64` values.
 //!
 //! ```
@@ -63,6 +63,18 @@
 //! let values = vec![n32(3.0), n32(-1.5), n32(71.3), N32::infinity()];
 //! assert!(values.iter().cloned().min() == Some(n32(-1.5)));
 //! assert!(values.iter().cloned().max() == Some(N32::infinity()));
+//! ```
+//!
+//! An example converting from R64 to f64.
+//!
+//! ```
+//! use noisy_float::prelude::*;
+//! use num_traits::cast::ToPrimitive;
+//!
+//! let value_r64: R64 = r64(1.0);
+//! let value_f64_a: f64 = value_r64.into();
+//! let value_f64_b: f64 = value_r64.to_f64().unwrap();
+//! assert!(value_f64_a == value_f64_b);
 //! ```
 //!
 //! # Features
