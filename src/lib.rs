@@ -65,7 +65,7 @@
 //! assert!(values.iter().cloned().max() == Some(N32::infinity()));
 //! ```
 //!
-//! An example converting from R64 to f64.
+//! An example converting from R64 to primitive types.
 //!
 //! ```
 //! use noisy_float::prelude::*;
@@ -73,8 +73,11 @@
 //!
 //! let value_r64: R64 = r64(1.0);
 //! let value_f64_a: f64 = value_r64.into();
-//! let value_f64_b: f64 = value_r64.to_f64().unwrap();
+//! let value_f64_b: f64 = value_r64.raw();
+//! let value_u64: u64 = value_r64.to_u64().unwrap();
+//!
 //! assert!(value_f64_a == value_f64_b);
+//! assert!(value_f64_a as u64 == value_u64);
 //! ```
 //!
 //! # Features
