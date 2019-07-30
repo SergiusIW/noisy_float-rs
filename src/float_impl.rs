@@ -18,7 +18,7 @@ use std::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssi
 use std::num::FpCategory;
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
-use std::convert::From;
+use std::convert::{From, TryFrom};
 use num_traits::{Bounded, Float, Num, FloatConst, Signed};
 use num_traits::cast::{NumCast, FromPrimitive, ToPrimitive};
 use num_traits::identities::{Zero, One};
@@ -356,6 +356,20 @@ impl<C: FloatChecker<f64>> From<NoisyFloat<f64, C>> for f64 {
 impl<C: FloatChecker<f32>> From<NoisyFloat<f32, C>> for f64 {
     #[inline] fn from(n: NoisyFloat<f32, C>) -> Self {
         n.value as f64
+    }
+}
+
+impl<C: FloatChecker<f64>> TryFrom<f64> for NoisyFloat<f64, C> {
+    type Error = &'static str;
+    #[inline] fn try_from(f: f64) -> Result<Self, Self::Error> {
+        Self::try_new(f).ok_or("illegal value")
+    }
+}
+
+impl<C: FloatChecker<f32>> TryFrom<f32> for NoisyFloat<f32, C> {
+    type Error = &'static str;
+    #[inline] fn try_from(f: f32) -> Result<Self, Self::Error> {
+        Self::try_new(f).ok_or("illegal value")
     }
 }
 
