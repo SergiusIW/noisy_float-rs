@@ -415,6 +415,13 @@ mod tests {
         assert_eq!(R64::epsilon(), f64::EPSILON);
     }
 
+    #[test]
+    fn test_try_into() {
+        use std::convert::{TryInto, TryFrom};
+        let _: R64 = 1.0.try_into().unwrap();
+        let _ = R64::try_from(f64::INFINITY).unwrap_err();
+    }
+
     struct TestHasher { bytes: Vec<u8> }
 
     impl Hasher for TestHasher {
