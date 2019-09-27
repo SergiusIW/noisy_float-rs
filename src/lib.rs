@@ -31,7 +31,7 @@
 //! but during a release run there is *no overhead* for using these floating
 //! point types compared to using `f32` or `f64` directly.
 //!
-//! This crate makes use of the num, bounded, signed and floating point traits 
+//! This crate makes use of the num, bounded, signed and floating point traits
 //! in the popular `num_traits` crate.
 //!
 //! # Examples
@@ -90,10 +90,10 @@
 extern crate num_traits;
 
 #[cfg(feature = "serde-1")]
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-mod float_impl;
 pub mod checkers;
+mod float_impl;
 pub mod types;
 
 /// Prelude for the `noisy_float` crate.
@@ -109,9 +109,9 @@ pub mod prelude {
     pub use num_traits::Float;
 }
 
-use std::marker::PhantomData;
-use std::fmt;
 use num_traits::Float;
+use std::fmt;
+use std::marker::PhantomData;
 
 /// Trait for checking whether a floating point number is *valid*.
 ///
@@ -145,9 +145,33 @@ pub trait FloatChecker<F> {
 /// The exception to this rule is for methods that return an `Option` containing
 /// a `NoisyFloat`, in which case the result would be `None` if the value is invalid.
 #[repr(transparent)]
-pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
+pub struct NoisyFloat<F, C> {
     value: F,
-    checker: PhantomData<C>
+    checker: PhantomData<C>,
+}
+
+impl<F, C> NoisyFloat<F, C> {
+    /// Create a `NoisyFloat` with the given value.
+    ///
+    /// The value is not checked for validity, and the caller will have to ensure the passed value is correct with the given `FloatChecker` type.
+    ///
+    /// This is a const function and can be used to create const values.
+    ///
+    /// ```rust
+    /// # use noisy_float::types::R32;
+    /// const GRAVITY: R32 = unsafe { R32::const_unchecked_new(9.82)};
+    /// ```
+    pub const unsafe fn const_unchecked_new(value: F) -> Self {
+        Self::unchecked_new(value)
+    }
+
+    #[inline]
+    const fn unchecked_new(value: F) -> Self {
+        NoisyFloat {
+            value: value,
+            checker: PhantomData,
+        }
+    }
 }
 
 impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
@@ -160,14 +184,6 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         Self::unchecked_new(value)
     }
 
-    #[inline]
-    fn unchecked_new(value: F) -> Self {
-        NoisyFloat {
-            value: value,
-            checker: PhantomData
-        }
-    }
-
     /// Tries to construct a `NoisyFloat` with the given value.
     ///
     /// Returns `None` if the value is invalid.
@@ -176,7 +192,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         if C::check(value) {
             Some(NoisyFloat {
                 value: value,
-                checker: PhantomData
+                checker: PhantomData,
             })
         } else {
             None
@@ -269,13 +285,17 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// This method exists to disambiguate between `num_traits::Float.min` and `std::cmp::Ord.min`.
     #[inline]
-    pub fn min(self, other: Self) -> Self { Ord::min(self, other) }
+    pub fn min(self, other: Self) -> Self {
+        Ord::min(self, other)
+    }
 
     /// Compares and returns the maximum of two values.
     ///
     /// This method exists to disambiguate between `num_traits::Float.max` and `std::cmp::Ord.max`.
     #[inline]
-    pub fn max(self, other: Self) -> Self { Ord::max(self, other) }
+    pub fn max(self, other: Self) -> Self {
+        Ord::max(self, other)
+    }
 }
 
 impl<F: Float + Default, C: FloatChecker<F>> Default for NoisyFloat<F, C> {
@@ -328,18 +348,17 @@ impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for 
     }
 }
 
-
 #[cfg(test)]
 mod tests {
+    use crate::prelude::*;
+    #[cfg(feature = "serde-1")]
+    use serde_derive::{Deserialize, Serialize};
     #[cfg(feature = "serde-1")]
     use serde_json;
-    #[cfg(feature = "serde-1")]
-    use serde_derive::{Serialize, Deserialize};
-    use crate::prelude::*;
     use std::f32;
     use std::f64::{self, consts};
-    use std::mem::{size_of, align_of};
     use std::hash::{Hash, Hasher};
+    use std::mem::{align_of, size_of};
 
     #[test]
     fn smoke_test() {
@@ -417,16 +436,22 @@ mod tests {
 
     #[test]
     fn test_try_into() {
-        use std::convert::{TryInto, TryFrom};
+        use std::convert::{TryFrom, TryInto};
         let _: R64 = 1.0.try_into().unwrap();
         let _ = R64::try_from(f64::INFINITY).unwrap_err();
     }
 
-    struct TestHasher { bytes: Vec<u8> }
+    struct TestHasher {
+        bytes: Vec<u8>,
+    }
 
     impl Hasher for TestHasher {
-        fn finish(&self) -> u64 { panic!("unexpected Hasher.finish invocation") }
-        fn write(&mut self, bytes: &[u8]) { self.bytes.extend_from_slice(bytes) }
+        fn finish(&self) -> u64 {
+            panic!("unexpected Hasher.finish invocation")
+        }
+        fn write(&mut self, bytes: &[u8]) {
+            self.bytes.extend_from_slice(bytes)
+        }
     }
 
     fn hash_bytes<T: Hash>(value: T) -> Vec<u8> {
@@ -442,8 +467,14 @@ mod tests {
         assert_eq!(hash_bytes(r32(10.3)), hash_bytes(10.3f32.to_bits()));
         assert_ne!(hash_bytes(r32(10.3)), hash_bytes(10.4f32.to_bits()));
 
-        assert_eq!(hash_bytes(N64::infinity()), hash_bytes(f64::INFINITY.to_bits()));
-        assert_eq!(hash_bytes(N64::neg_infinity()), hash_bytes(f64::NEG_INFINITY.to_bits()));
+        assert_eq!(
+            hash_bytes(N64::infinity()),
+            hash_bytes(f64::INFINITY.to_bits())
+        );
+        assert_eq!(
+            hash_bytes(N64::neg_infinity()),
+            hash_bytes(f64::NEG_INFINITY.to_bits())
+        );
 
         // positive and negative zero should have the same hashes
         assert_eq!(hash_bytes(r64(0.0)), hash_bytes(0.0f64.to_bits()));
@@ -483,9 +514,7 @@ mod tests {
     #[test]
     fn deserialize_struct_containing_n64() {
         let src = r#"{ "value": 3.14 }"#;
-        let should_be = Dummy {
-            value: n64(3.14),
-        };
+        let should_be = Dummy { value: n64(3.14) };
 
         let got: Dummy = serde_json::from_str(src).unwrap();
         assert_eq!(got, should_be);
@@ -494,9 +523,7 @@ mod tests {
     #[cfg(feature = "serde-1")]
     #[test]
     fn serialize_struct_containing_n64() {
-        let src = Dummy {
-            value: n64(3.14),
-        };
+        let src = Dummy { value: n64(3.14) };
         let should_be = r#"{"value":3.14}"#;
 
         let got = serde_json::to_string(&src).unwrap();
