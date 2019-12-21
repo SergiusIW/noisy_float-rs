@@ -30,6 +30,7 @@ point types compared to using `f32` or `f64` directly.
 
 This crate makes use of the num, bounded, signed and floating point traits in the
 popular `num_traits` crate.
+This crate can be compiled with no_std.
 
 ### Examples
 An example using the `R64` type, which corresponds to *finite* `f64` values.

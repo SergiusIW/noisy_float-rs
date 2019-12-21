@@ -33,6 +33,7 @@
 //!
 //! This crate makes use of the num, bounded, signed and floating point traits 
 //! in the popular `num_traits` crate.
+//! This crate can be compiled with no_std.
 //!
 //! # Examples
 //! An example using the `R64` type, which corresponds to *finite* `f64` values.
@@ -87,7 +88,7 @@
 //! - `serde-1`: Enable serialization for all `NoisyFloats` using serde 1.0 and
 //!   will transparently serialize then as floats
 
-extern crate num_traits;
+#![no_std]
 
 #[cfg(feature = "serde-1")]
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
@@ -109,8 +110,8 @@ pub mod prelude {
     pub use num_traits::Float;
 }
 
-use std::marker::PhantomData;
-use std::fmt;
+use core::marker::PhantomData;
+use core::fmt;
 use num_traits::Float;
 
 /// Trait for checking whether a floating point number is *valid*.
@@ -331,6 +332,9 @@ impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for 
 
 #[cfg(test)]
 mod tests {
+    extern crate std;
+    use std::prelude::v1::*;
+
     #[cfg(feature = "serde-1")]
     use serde_json;
     #[cfg(feature = "serde-1")]
