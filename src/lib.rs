@@ -110,8 +110,7 @@ pub mod prelude {
     pub use num_traits::Float;
 }
 
-use core::marker::PhantomData;
-use core::fmt;
+use core::{marker::PhantomData, fmt};
 use num_traits::Float;
 
 /// Trait for checking whether a floating point number is *valid*.
@@ -340,10 +339,12 @@ mod tests {
     #[cfg(feature = "serde-1")]
     use serde_derive::{Serialize, Deserialize};
     use crate::prelude::*;
-    use std::f32;
-    use std::f64::{self, consts};
-    use std::mem::{size_of, align_of};
-    use std::hash::{Hash, Hasher};
+    use std::{
+        f32,
+        f64::{self, consts},
+        mem::{size_of, align_of},
+        hash::{Hash, Hasher},
+    };
 
     #[test]
     fn smoke_test() {

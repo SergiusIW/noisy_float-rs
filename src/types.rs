@@ -18,10 +18,10 @@
 //! to check for valid values, so there is no overhead
 //! when running in an optimized build.
 
-extern crate num_traits;
-
-use crate::NoisyFloat;
-use crate::checkers::{NumChecker, FiniteChecker};
+use crate::{
+    NoisyFloat,
+    checkers::{NumChecker, FiniteChecker},
+};
 
 /// A floating point number behaving like `f32` that does not allow NaN.
 ///

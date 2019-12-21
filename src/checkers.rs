@@ -14,8 +14,6 @@
 
 //! Standard implementations of `FloatChecker`.
 
-extern crate num_traits;
-
 use num_traits::Float;
 use crate::{FloatChecker, NoisyFloat};
 

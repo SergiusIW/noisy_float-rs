@@ -12,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use core::cmp::Ordering;
-use core::iter;
-use core::ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg};
-use core::num::FpCategory;
-use core::hash::{Hash, Hasher};
-use core::mem::transmute;
-use core::convert::{From, TryFrom};
-use num_traits::{Bounded, Float, Num, FloatConst, Signed};
-use num_traits::cast::{NumCast, FromPrimitive, ToPrimitive};
-use num_traits::identities::{Zero, One};
+use core::{
+    iter,
+    cmp::Ordering,
+    ops::{Add, Sub, Mul, Div, Rem, AddAssign, SubAssign, MulAssign, DivAssign, RemAssign, Neg},
+    num::FpCategory,
+    hash::{Hash, Hasher},
+    mem::transmute,
+    convert::{From, TryFrom},
+};
+use num_traits::{
+    Bounded, Float, Num, FloatConst, Signed,
+    cast::{NumCast, FromPrimitive, ToPrimitive},
+    identities::{Zero, One},
+};
 use crate::{FloatChecker, NoisyFloat};
 
 impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
