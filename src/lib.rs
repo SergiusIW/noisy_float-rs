@@ -521,4 +521,17 @@ mod tests {
         let got = serde_json::to_string(&src).unwrap();
         assert_eq!(got, should_be);
     }
+
+    #[cfg(feature = "approx")]
+    #[test]
+    fn approx_assert_eq() {
+        use approx::{assert_abs_diff_eq, assert_relative_eq, assert_ulps_eq};
+
+        let lhs = r64(0.1000000000000001);
+        let rhs = r64(0.1);
+
+        assert_abs_diff_eq!(lhs, rhs);
+        assert_relative_eq!(lhs, rhs);
+        assert_ulps_eq!(lhs, rhs);
+    }
 }
