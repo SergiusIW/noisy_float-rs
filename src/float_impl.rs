@@ -1018,3 +1018,59 @@ impl<'a, F: Float, C: FloatChecker<F>> iter::Product<&'a Self> for NoisyFloat<F,
         Self::new(iter.map(|i| i.raw()).fold(F::one(), |acc, i| acc * i))
     }
 }
+
+#[cfg(feature = "approx")]
+mod approx_impl {
+    use super::*;
+    use approx::{AbsDiffEq, RelativeEq, UlpsEq};
+
+    impl<F, C> AbsDiffEq<Self> for NoisyFloat<F, C>
+    where
+        F: Float + AbsDiffEq<Epsilon = F>,
+        C: FloatChecker<F>,
+    {
+        type Epsilon = NoisyFloat<F, C>;
+
+        fn default_epsilon() -> Self::Epsilon {
+            Self::Epsilon::new(F::default_epsilon())
+        }
+
+        fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
+            self.raw().abs_diff_eq(&other.raw(), epsilon.raw())
+        }
+    }
+
+    impl<F, C> RelativeEq<Self> for NoisyFloat<F, C>
+    where
+        F: Float + RelativeEq<Epsilon = F>,
+        C: FloatChecker<F>,
+    {
+        fn default_max_relative() -> Self::Epsilon {
+            Self::new(F::default_max_relative())
+        }
+
+        fn relative_eq(
+            &self,
+            other: &Self,
+            epsilon: Self::Epsilon,
+            max_relative: Self::Epsilon,
+        ) -> bool {
+            self.raw()
+                .relative_eq(&other.raw(), epsilon.raw(), max_relative.raw())
+        }
+    }
+
+    impl<F, C> UlpsEq<Self> for NoisyFloat<F, C>
+    where
+        F: Float + UlpsEq<Epsilon = F>,
+        C: FloatChecker<F>,
+    {
+        fn default_max_ulps() -> u32 {
+            F::default_max_ulps()
+        }
+
+        fn ulps_eq(&self, other: &Self, epsilon: Self::Epsilon, max_ulps: u32) -> bool {
+            self.raw().ulps_eq(&other.raw(), epsilon.raw(), max_ulps)
+        }
+    }
+}
