@@ -31,7 +31,7 @@
 //! but during a release run there is *no overhead* for using these floating
 //! point types compared to using `f32` or `f64` directly.
 //!
-//! This crate makes use of the num, bounded, signed and floating point traits 
+//! This crate makes use of the num, bounded, signed and floating point traits
 //! in the popular `num_traits` crate.
 //! This crate can be compiled with no_std.
 //!
@@ -49,7 +49,10 @@
 //!     (a + b) * 0.5 //the RHS of ops can be the underlying float type
 //! }
 //!
-//! println!("geometric_mean(10.0, 20.0) = {}", geometric_mean(r64(10.0), r64(20.0)));
+//! println!(
+//!     "geometric_mean(10.0, 20.0) = {}",
+//!     geometric_mean(r64(10.0), r64(20.0))
+//! );
 //! //prints 14.142...
 //! assert!(mean(r64(10.0), r64(20.0)) == 15.0);
 //! ```
@@ -91,10 +94,10 @@
 #![no_std]
 
 #[cfg(feature = "serde-1")]
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-mod float_impl;
 pub mod checkers;
+mod float_impl;
 pub mod types;
 
 /// Prelude for the `noisy_float` crate.
@@ -110,7 +113,7 @@ pub mod prelude {
     pub use num_traits::Float;
 }
 
-use core::{marker::PhantomData, fmt};
+use core::{fmt, marker::PhantomData};
 use num_traits::Float;
 
 /// Trait for checking whether a floating point number is *valid*.
@@ -147,7 +150,7 @@ pub trait FloatChecker<F> {
 #[repr(transparent)]
 pub struct NoisyFloat<F: Float, C: FloatChecker<F>> {
     value: F,
-    checker: PhantomData<C>
+    checker: PhantomData<C>,
 }
 
 impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
@@ -164,7 +167,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     fn unchecked_new(value: F) -> Self {
         NoisyFloat {
             value: value,
-            checker: PhantomData
+            checker: PhantomData,
         }
     }
 
@@ -176,7 +179,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
         if C::check(value) {
             Some(NoisyFloat {
                 value: value,
-                checker: PhantomData
+                checker: PhantomData,
             })
         } else {
             None
@@ -269,13 +272,17 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// This method exists to disambiguate between `num_traits::Float.min` and `std::cmp::Ord.min`.
     #[inline]
-    pub fn min(self, other: Self) -> Self { Ord::min(self, other) }
+    pub fn min(self, other: Self) -> Self {
+        Ord::min(self, other)
+    }
 
     /// Compares and returns the maximum of two values.
     ///
     /// This method exists to disambiguate between `num_traits::Float.max` and `std::cmp::Ord.max`.
     #[inline]
-    pub fn max(self, other: Self) -> Self { Ord::max(self, other) }
+    pub fn max(self, other: Self) -> Self {
+        Ord::max(self, other)
+    }
 }
 
 impl<F: Float + Default, C: FloatChecker<F>> Default for NoisyFloat<F, C> {
@@ -328,22 +335,21 @@ impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for 
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     extern crate std;
     use std::prelude::v1::*;
 
+    use crate::prelude::*;
+    #[cfg(feature = "serde-1")]
+    use serde_derive::{Deserialize, Serialize};
     #[cfg(feature = "serde-1")]
     use serde_json;
-    #[cfg(feature = "serde-1")]
-    use serde_derive::{Serialize, Deserialize};
-    use crate::prelude::*;
     use std::{
         f32,
         f64::{self, consts},
-        mem::{size_of, align_of},
         hash::{Hash, Hasher},
+        mem::{align_of, size_of},
     };
 
     #[test]
@@ -422,16 +428,22 @@ mod tests {
 
     #[test]
     fn test_try_into() {
-        use std::convert::{TryInto, TryFrom};
+        use std::convert::{TryFrom, TryInto};
         let _: R64 = 1.0.try_into().unwrap();
         let _ = R64::try_from(f64::INFINITY).unwrap_err();
     }
 
-    struct TestHasher { bytes: Vec<u8> }
+    struct TestHasher {
+        bytes: Vec<u8>,
+    }
 
     impl Hasher for TestHasher {
-        fn finish(&self) -> u64 { panic!("unexpected Hasher.finish invocation") }
-        fn write(&mut self, bytes: &[u8]) { self.bytes.extend_from_slice(bytes) }
+        fn finish(&self) -> u64 {
+            panic!("unexpected Hasher.finish invocation")
+        }
+        fn write(&mut self, bytes: &[u8]) {
+            self.bytes.extend_from_slice(bytes)
+        }
     }
 
     fn hash_bytes<T: Hash>(value: T) -> Vec<u8> {
@@ -447,8 +459,14 @@ mod tests {
         assert_eq!(hash_bytes(r32(10.3)), hash_bytes(10.3f32.to_bits()));
         assert_ne!(hash_bytes(r32(10.3)), hash_bytes(10.4f32.to_bits()));
 
-        assert_eq!(hash_bytes(N64::infinity()), hash_bytes(f64::INFINITY.to_bits()));
-        assert_eq!(hash_bytes(N64::neg_infinity()), hash_bytes(f64::NEG_INFINITY.to_bits()));
+        assert_eq!(
+            hash_bytes(N64::infinity()),
+            hash_bytes(f64::INFINITY.to_bits())
+        );
+        assert_eq!(
+            hash_bytes(N64::neg_infinity()),
+            hash_bytes(f64::NEG_INFINITY.to_bits())
+        );
 
         // positive and negative zero should have the same hashes
         assert_eq!(hash_bytes(r64(0.0)), hash_bytes(0.0f64.to_bits()));
@@ -488,9 +506,7 @@ mod tests {
     #[test]
     fn deserialize_struct_containing_n64() {
         let src = r#"{ "value": 3.14 }"#;
-        let should_be = Dummy {
-            value: n64(3.14),
-        };
+        let should_be = Dummy { value: n64(3.14) };
 
         let got: Dummy = serde_json::from_str(src).unwrap();
         assert_eq!(got, should_be);
@@ -499,12 +515,23 @@ mod tests {
     #[cfg(feature = "serde-1")]
     #[test]
     fn serialize_struct_containing_n64() {
-        let src = Dummy {
-            value: n64(3.14),
-        };
+        let src = Dummy { value: n64(3.14) };
         let should_be = r#"{"value":3.14}"#;
 
         let got = serde_json::to_string(&src).unwrap();
         assert_eq!(got, should_be);
+    }
+
+    #[cfg(feature = "approx")]
+    #[test]
+    fn approx_assert_eq() {
+        use approx::{assert_abs_diff_eq, assert_relative_eq, assert_ulps_eq};
+
+        let lhs = r64(0.1000000000000001);
+        let rhs = r64(0.1);
+
+        assert_abs_diff_eq!(lhs, rhs);
+        assert_relative_eq!(lhs, rhs);
+        assert_ulps_eq!(lhs, rhs);
     }
 }

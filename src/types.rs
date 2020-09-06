@@ -19,8 +19,8 @@
 //! when running in an optimized build.
 
 use crate::{
+    checkers::{FiniteChecker, NumChecker},
     NoisyFloat,
-    checkers::{NumChecker, FiniteChecker},
 };
 
 /// A floating point number behaving like `f32` that does not allow NaN.
@@ -46,7 +46,6 @@ pub type R32 = NoisyFloat<f32, FiniteChecker>;
 /// The "R" in the name stands for "Real", since in Mathematics, the Real
 /// numbers do not include NaN or +/- Infinity.
 pub type R64 = NoisyFloat<f64, FiniteChecker>;
-
 
 /// Shorthand for `N32::new(value)`.
 #[inline]
