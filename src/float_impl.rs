@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Matthew D. Michelotti
+// Copyright 2016-2021 Matthew D. Michelotti
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ use num_traits::{
 impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
     #[inline]
     fn clone(&self) -> Self {
-        Self::unchecked_new(self.value)
+        Self::unchecked_new_generic(self.value)
     }
 }
 

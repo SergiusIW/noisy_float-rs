@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Matthew D. Michelotti
+// Copyright 2016-2021 Matthew D. Michelotti
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -55,6 +55,6 @@ impl<F: Float> FloatChecker<F> for FiniteChecker {
 
 impl<F: Float> From<NoisyFloat<F, FiniteChecker>> for NoisyFloat<F, NumChecker> {
     fn from(value: NoisyFloat<F, FiniteChecker>) -> Self {
-        Self::unchecked_new(value.raw())
+        Self::unchecked_new_generic(value.raw())
     }
 }

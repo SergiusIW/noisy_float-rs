@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Matthew D. Michelotti
+// Copyright 2016-2021 Matthew D. Michelotti
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -160,13 +160,13 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     #[inline]
     pub fn new(value: F) -> Self {
         C::assert(value);
-        Self::unchecked_new(value)
+        Self::unchecked_new_generic(value)
     }
 
     #[inline]
-    fn unchecked_new(value: F) -> Self {
+    fn unchecked_new_generic(value: F) -> Self {
         NoisyFloat {
-            value: value,
+            value,
             checker: PhantomData,
         }
     }
@@ -178,7 +178,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     pub fn try_new(value: F) -> Option<Self> {
         if C::check(value) {
             Some(NoisyFloat {
-                value: value,
+                value,
                 checker: PhantomData,
             })
         } else {
@@ -367,7 +367,8 @@ mod tests {
         assert_eq!(N64::try_new(f64::NAN), None);
         assert_eq!(R64::try_new(f64::NAN), None);
         assert_eq!(N64::try_borrowed(&f64::NAN), None);
-        assert_eq!(N64::try_borrowed_mut(&mut f64::NAN), None);
+        let mut nan = f64::NAN;
+        assert_eq!(N64::try_borrowed_mut(&mut nan), None);
     }
 
     #[test]
@@ -533,5 +534,23 @@ mod tests {
         assert_abs_diff_eq!(lhs, rhs);
         assert_relative_eq!(lhs, rhs);
         assert_ulps_eq!(lhs, rhs);
+    }
+
+    #[test]
+    fn const_functions() {
+        const A: N32 = N32::unchecked_new(1.0);
+        const B: N64 = N64::unchecked_new(2.0);
+        const C: R32 = R32::unchecked_new(3.0);
+        const D: R64 = R64::unchecked_new(4.0);
+
+        const A_RAW: f32 = A.const_raw();
+        const B_RAW: f64 = B.const_raw();
+        const C_RAW: f32 = C.const_raw();
+        const D_RAW: f64 = D.const_raw();
+
+        assert_eq!(A_RAW, 1.0);
+        assert_eq!(B_RAW, 2.0);
+        assert_eq!(C_RAW, 3.0);
+        assert_eq!(D_RAW, 4.0);
     }
 }

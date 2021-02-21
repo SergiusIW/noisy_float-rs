@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Matthew D. Michelotti
+// Copyright 2016-2021 Matthew D. Michelotti
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 //! to check for valid values, so there is no overhead
 //! when running in an optimized build.
 
+use core::marker::PhantomData;
 use crate::{
     checkers::{FiniteChecker, NumChecker},
     NoisyFloat,
@@ -70,3 +71,32 @@ pub fn r32(value: f32) -> R32 {
 pub fn r64(value: f64) -> R64 {
     R64::new(value)
 }
+
+macro_rules! const_fns {
+    ($type:ty, $raw:ty) => {
+        impl $type {
+            /// A const constructor that does not check whether `value` is valid.
+            ///
+            /// WARNING: This constructor does not panic even in debug mode.
+            /// As always, it is the user's responsibility to ensure `value` is valid.
+            /// Until Rust supports panics in const functions, this constructor
+            /// is necessary to create a NoisyFloat in a const setting.
+            pub const fn unchecked_new(value: $raw) -> Self {
+                Self {
+                    value,
+                    checker: PhantomData,
+                }
+            }
+
+            /// A const function that returns the underlying float value.
+            pub const fn const_raw(self) -> $raw {
+                self.value
+            }
+        }
+    };
+}
+
+const_fns!(N32, f32);
+const_fns!(N64, f64);
+const_fns!(R32, f32);
+const_fns!(R64, f64);
