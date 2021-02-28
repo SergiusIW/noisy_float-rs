@@ -94,7 +94,7 @@
 #![no_std]
 
 #[cfg(feature = "serde-1")]
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
 
 pub mod checkers;
 mod float_impl;
@@ -331,7 +331,7 @@ impl<F: Float + Serialize, C: FloatChecker<F>> Serialize for NoisyFloat<F, C> {
 impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for NoisyFloat<F, C> {
     fn deserialize<D: Deserializer<'de>>(de: D) -> Result<Self, D::Error> {
         let value = F::deserialize(de)?;
-        Ok(Self::new(value))
+        Self::try_new(value).ok_or_else(|| D::Error::custom("invalid NoisyFloat"))
     }
 }
 
@@ -494,6 +494,25 @@ mod tests {
 
         let got: R32 = serde_json::from_str(src).unwrap();
         assert_eq!(got, should_be);
+    }
+
+    #[cfg(feature = "serde-1")]
+    #[test]
+    fn deserialize_invalid_float() {
+        use crate::{FloatChecker, NoisyFloat};
+        struct PositiveChecker;
+        impl FloatChecker<f64> for PositiveChecker {
+            fn check(value: f64) -> bool {
+                value > 0.
+            }
+            fn assert(value: f64) {
+                debug_assert!(Self::check(value))
+            }
+        }
+
+        let src = "-1.0";
+        let got: Result<NoisyFloat<f64, PositiveChecker>, _> = serde_json::from_str(src);
+        assert!(got.is_err());
     }
 
     // Make sure you can use serde_derive with noisy floats.
