@@ -1,6 +1,6 @@
 [package]
 name = "noisy_float"
-version = "0.1.14"
+version = "0.1.15"
 edition = "2018"
 authors = ["Matthew Michelotti <matthew@matthewmichelotti.com>"]
 description = "Contains floating point types that panic if they are set to an illegal value, such as NaN"
