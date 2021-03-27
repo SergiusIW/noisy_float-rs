@@ -88,12 +88,14 @@
 //!
 //! This crate has the following cargo features:
 //!
-//! - `serde-1`: Enable serialization for all `NoisyFloats` using serde 1.0 and
+//! - `serde`: Enable serialization for all `NoisyFloats` using serde 1.0 and
 //!   will transparently serialize then as floats
+//! - `approx`: Adds implementations to use `NoisyFloat` with the `approx`
+//!   crate
 
 #![no_std]
 
-#[cfg(feature = "serde-1")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
 
 pub mod checkers;
@@ -320,14 +322,14 @@ impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<
     }
 }
 
-#[cfg(feature = "serde-1")]
+#[cfg(feature = "serde")]
 impl<F: Float + Serialize, C: FloatChecker<F>> Serialize for NoisyFloat<F, C> {
     fn serialize<S: Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
         self.value.serialize(ser)
     }
 }
 
-#[cfg(feature = "serde-1")]
+#[cfg(feature = "serde")]
 impl<'de, F: Float + Deserialize<'de>, C: FloatChecker<F>> Deserialize<'de> for NoisyFloat<F, C> {
     fn deserialize<D: Deserializer<'de>>(de: D) -> Result<Self, D::Error> {
         let value = F::deserialize(de)?;
@@ -341,9 +343,9 @@ mod tests {
     use std::prelude::v1::*;
 
     use crate::prelude::*;
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     use serde_derive::{Deserialize, Serialize};
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     use serde_json;
     use std::{
         f32,
@@ -476,7 +478,7 @@ mod tests {
         assert_eq!(hash_bytes(r32(-0.0)), hash_bytes(0.0f32.to_bits()));
     }
 
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     #[test]
     fn serialize_transparently_as_float() {
         let num = R32::new(3.14);
@@ -486,7 +488,7 @@ mod tests {
         assert_eq!(got, should_be);
     }
 
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     #[test]
     fn deserialize_transparently_as_float() {
         let src = "3.14";
@@ -496,7 +498,7 @@ mod tests {
         assert_eq!(got, should_be);
     }
 
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     #[test]
     fn deserialize_invalid_float() {
         use crate::{FloatChecker, NoisyFloat};
@@ -516,13 +518,13 @@ mod tests {
     }
 
     // Make sure you can use serde_derive with noisy floats.
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     #[derive(Debug, PartialEq, Serialize, Deserialize)]
     struct Dummy {
         value: N64,
     }
 
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     #[test]
     fn deserialize_struct_containing_n64() {
         let src = r#"{ "value": 3.14 }"#;
@@ -532,7 +534,7 @@ mod tests {
         assert_eq!(got, should_be);
     }
 
-    #[cfg(feature = "serde-1")]
+    #[cfg(feature = "serde")]
     #[test]
     fn serialize_struct_containing_n64() {
         let src = Dummy { value: n64(3.14) };

@@ -7,7 +7,8 @@ description = "Contains floating point types that panic if they are set to an il
 documentation = "https://docs.rs/noisy_float"
 repository = "https://github.com/SergiusIW/noisy_float-rs"
 readme = "README.md"
-keywords = ["float", "signaling", "NaN", "finite", "panic"]
+keywords = ["float", "Ord", "NaN", "finite", "panic"]
+categories = ["mathematics"]
 license = "Apache-2.0"
 
 [dependencies]
@@ -23,6 +24,3 @@ criterion = "0.3"
 [[bench]]
 name = "benchmark"
 harness = false
-
-[features]
-serde-1 = ["serde"]
