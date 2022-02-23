@@ -58,3 +58,36 @@ impl<F: Float> From<NoisyFloat<F, FiniteChecker>> for NoisyFloat<F, NumChecker> 
         Self::unchecked_new_generic(value.raw())
     }
 }
+
+/// A `FloatChecker` that considers any finite, non-negative values valid.
+///
+/// Zero and positive finite values are okay, anything else (negative, infinite, NaN) is invalid.
+///
+/// The `assert` method is implemented using `debug_assert!`.
+pub struct NonNegativeChecker;
+
+impl<F: Float> FloatChecker<F> for NonNegativeChecker {
+    #[inline]
+    fn assert(value: F) {
+        debug_assert!(value.is_finite(), "unexpected NaN or infinity");
+        debug_assert!(!value.is_sign_negative(), "unexpected negative number");
+    }
+
+    #[inline]
+    fn check(value: F) -> bool {
+        value.is_finite() && !value.is_sign_negative()
+    }
+}
+
+impl<F: Float> From<NoisyFloat<F, NonNegativeChecker>> for NoisyFloat<F, FiniteChecker> {
+    #[inline]
+    fn from(value: NoisyFloat<F, NonNegativeChecker>) -> Self {
+        Self::unchecked_new_generic(value.raw())
+    }
+}
+impl<F: Float> From<NoisyFloat<F, NonNegativeChecker>> for NoisyFloat<F, NumChecker> {
+    #[inline]
+    fn from(value: NoisyFloat<F, NonNegativeChecker>) -> Self {
+        Self::unchecked_new_generic(value.raw())
+    }
+}
