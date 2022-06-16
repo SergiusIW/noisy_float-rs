@@ -18,7 +18,6 @@ use core::{
     convert::{From, TryFrom},
     hash::{Hash, Hasher},
     iter,
-    mem::transmute,
     num::FpCategory,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign},
 };
@@ -124,7 +123,7 @@ impl<C: FloatChecker<f32>> Hash for NoisyFloat<f32, C> {
         let bits = if self.value == 0.0 {
             0 // this accounts for +0.0 and -0.0
         } else {
-            unsafe { transmute::<f32, u32>(self.value) }
+            self.value.to_bits()
         };
         bits.hash(state);
     }
@@ -136,7 +135,7 @@ impl<C: FloatChecker<f64>> Hash for NoisyFloat<f64, C> {
         let bits = if self.value == 0.0 {
             0 // this accounts for +0.0 and -0.0
         } else {
-            unsafe { transmute::<f64, u64>(self.value) }
+            self.value.to_bits()
         };
         bits.hash(state);
     }
