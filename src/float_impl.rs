@@ -27,6 +27,28 @@ use num_traits::{
     Bounded, Float, FloatConst, Num, Signed,
 };
 
+impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
+    pub fn checked_add(self, rhs: Self) -> Option<Self> {
+        Self::try_new(self.raw() + rhs.raw())
+    }
+
+    pub fn checked_sub(self, rhs: Self) -> Option<Self> {
+        Self::try_new(self.raw() - rhs.raw())
+    }
+
+    pub fn checked_mul(self, rhs: Self) -> Option<Self> {
+        Self::try_new(self.raw() * rhs.raw())
+    }
+
+    pub fn checked_div(self, rhs: Self) -> Option<Self> {
+        Self::try_new(self.raw() / rhs.raw())
+    }
+
+    pub fn checked_rem(self, rhs: Self) -> Option<Self> {
+        Self::try_new(self.raw() % rhs.raw())
+    }
+}
+
 impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
     #[inline]
     fn clone(&self) -> Self {
