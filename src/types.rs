@@ -20,7 +20,7 @@
 
 use core::marker::PhantomData;
 use crate::{
-    checkers::{FiniteChecker, NumChecker},
+    checkers::{FiniteChecker, NonNegativeChecker, NumChecker},
     NoisyFloat,
 };
 
@@ -48,6 +48,16 @@ pub type R32 = NoisyFloat<f32, FiniteChecker>;
 /// numbers do not include NaN or +/- Infinity.
 pub type R64 = NoisyFloat<f64, FiniteChecker>;
 
+/// A floating point number behaving like `f32` that does not allow negative values, NaN, or Infinity.
+///
+/// The "Nn" in the name stands for "non-negative".
+pub type Nn32 = NoisyFloat<f32, NonNegativeChecker>;
+
+/// A floating point number behaving like `f64` that does not allow negative values, NaN, or Infinity.
+///
+/// The "Nn" in the name stands for "non-negative".
+pub type Nn64 = NoisyFloat<f64, NonNegativeChecker>;
+
 /// Shorthand for `N32::new(value)`.
 #[inline]
 pub fn n32(value: f32) -> N32 {
@@ -70,6 +80,18 @@ pub fn r32(value: f32) -> R32 {
 #[inline]
 pub fn r64(value: f64) -> R64 {
     R64::new(value)
+}
+
+/// Shorthand for `NN32::new(value)`.
+#[inline]
+pub fn nn32(value: f32) -> Nn32 {
+    Nn32::new(value)
+}
+
+/// Shorthand for `NN64::new(value)`.
+#[inline]
+pub fn nn64(value: f64) -> Nn64 {
+    Nn64::new(value)
 }
 
 macro_rules! const_fns {
@@ -100,3 +122,5 @@ const_fns!(N32, f32);
 const_fns!(N64, f64);
 const_fns!(R32, f32);
 const_fns!(R64, f64);
+const_fns!(Nn32, f32);
+const_fns!(Nn64, f64);

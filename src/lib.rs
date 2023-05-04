@@ -371,6 +371,10 @@ mod tests {
         assert_eq!(N64::try_borrowed(&f64::NAN), None);
         let mut nan = f64::NAN;
         assert_eq!(N64::try_borrowed_mut(&mut nan), None);
+        assert_eq!(Nn64::try_new(f64::INFINITY), None);
+        assert_eq!(Nn64::try_new(f64::NAN), None);
+        assert_eq!(Nn64::try_new(-1.0), None);
+        assert!(Nn64::try_new(f64::MAX).is_some());
     }
 
     #[test]
@@ -415,6 +419,27 @@ mod tests {
     #[should_panic]
     fn r64_infinity() {
         let _ = r64(1.0) / r64(0.0);
+    }
+
+    #[test]
+    #[cfg(debug_assertions)]
+    #[should_panic]
+    fn nn64_nan() {
+        let _ = nn64(0.0) / nn64(0.0);
+    }
+
+    #[test]
+    #[cfg(debug_assertions)]
+    #[should_panic]
+    fn nn64_infinity() {
+        let _ = nn64(1.0) / nn64(0.0);
+    }
+
+    #[test]
+    #[cfg(debug_assertions)]
+    #[should_panic]
+    fn nn64_neg() {
+        let _ = nn64(0.0) - nn64(1.0);
     }
 
     #[test]
@@ -563,15 +588,21 @@ mod tests {
         const B: N64 = N64::unchecked_new(2.0);
         const C: R32 = R32::unchecked_new(3.0);
         const D: R64 = R64::unchecked_new(4.0);
+        const E: Nn32 = Nn32::unchecked_new(5.0);
+        const F: Nn64 = Nn64::unchecked_new(6.0);
 
         const A_RAW: f32 = A.const_raw();
         const B_RAW: f64 = B.const_raw();
         const C_RAW: f32 = C.const_raw();
         const D_RAW: f64 = D.const_raw();
+        const E_RAW: f32 = E.const_raw();
+        const F_RAW: f64 = F.const_raw();
 
         assert_eq!(A_RAW, 1.0);
         assert_eq!(B_RAW, 2.0);
         assert_eq!(C_RAW, 3.0);
         assert_eq!(D_RAW, 4.0);
+        assert_eq!(E_RAW, 5.0);
+        assert_eq!(F_RAW, 6.0);
     }
 }
