@@ -26,6 +26,7 @@ pub struct NumChecker;
 
 impl<F: Float> FloatChecker<F> for NumChecker {
     #[inline]
+    #[track_caller]
     fn assert(value: F) {
         debug_assert!(Self::check(value), "unexpected NaN");
     }
@@ -43,6 +44,7 @@ pub struct FiniteChecker;
 
 impl<F: Float> FloatChecker<F> for FiniteChecker {
     #[inline]
+    #[track_caller]
     fn assert(value: F) {
         debug_assert!(Self::check(value), "unexpected NaN or infinity");
     }
