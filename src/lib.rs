@@ -96,7 +96,7 @@
 #![no_std]
 
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error};
+use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
 pub mod checkers;
 mod float_impl;
@@ -160,12 +160,14 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// Uses the `FloatChecker` to assert that the value is valid.
     #[inline]
+    #[track_caller]
     pub fn new(value: F) -> Self {
         C::assert(value);
         Self::unchecked_new_generic(value)
     }
 
     #[inline]
+    #[track_caller]
     fn unchecked_new_generic(value: F) -> Self {
         NoisyFloat {
             value,
@@ -177,6 +179,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// Returns `None` if the value is invalid.
     #[inline]
+    #[track_caller]
     pub fn try_new(value: F) -> Option<Self> {
         if C::check(value) {
             Some(NoisyFloat {
@@ -192,12 +195,14 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// Uses the `FloatChecker` to assert that the value is valid.
     #[inline]
+    #[track_caller]
     pub fn borrowed(value: &F) -> &Self {
         C::assert(*value);
         Self::unchecked_borrowed(value)
     }
 
     #[inline]
+    #[track_caller]
     fn unchecked_borrowed(value: &F) -> &Self {
         // This is safe because `NoisyFloat` is a thin wrapper around the
         // floating-point type.
@@ -208,6 +213,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// Returns `None` if the value is invalid.
     #[inline]
+    #[track_caller]
     pub fn try_borrowed(value: &F) -> Option<&Self> {
         if C::check(*value) {
             Some(Self::unchecked_borrowed(value))
@@ -220,12 +226,14 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// Uses the `FloatChecker` to assert that the value is valid.
     #[inline]
+    #[track_caller]
     pub fn borrowed_mut(value: &mut F) -> &mut Self {
         C::assert(*value);
         Self::unchecked_borrowed_mut(value)
     }
 
     #[inline]
+    #[track_caller]
     fn unchecked_borrowed_mut(value: &mut F) -> &mut Self {
         // This is safe because `NoisyFloat` is a thin wrapper around the
         // floating-point type.
@@ -236,6 +244,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// Returns `None` if the value is invalid.
     #[inline]
+    #[track_caller]
     pub fn try_borrowed_mut(value: &mut F) -> Option<&mut Self> {
         if C::check(*value) {
             Some(Self::unchecked_borrowed_mut(value))
@@ -250,6 +259,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     /// by unwrapping the result of a `NumCast` invocation for type `F`,
     /// although the later should not occur in normal situations.
     #[inline]
+    #[track_caller]
     pub fn from_f32(value: f32) -> Self {
         Self::new(F::from(value).unwrap())
     }
@@ -260,12 +270,14 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     /// by unwrapping the result of a `NumCast` invocation for type `F`,
     /// although the later should not occur in normal situations.
     #[inline]
+    #[track_caller]
     pub fn from_f64(value: f64) -> Self {
         Self::new(F::from(value).unwrap())
     }
 
     /// Returns the underlying float value.
     #[inline]
+    #[track_caller]
     pub fn raw(self) -> F {
         self.value
     }
@@ -274,6 +286,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// This method exists to disambiguate between `num_traits::Float.min` and `std::cmp::Ord.min`.
     #[inline]
+    #[track_caller]
     pub fn min(self, other: Self) -> Self {
         Ord::min(self, other)
     }
@@ -282,6 +295,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
     ///
     /// This method exists to disambiguate between `num_traits::Float.max` and `std::cmp::Ord.max`.
     #[inline]
+    #[track_caller]
     pub fn max(self, other: Self) -> Self {
         Ord::max(self, other)
     }
@@ -289,6 +303,7 @@ impl<F: Float, C: FloatChecker<F>> NoisyFloat<F, C> {
 
 impl<F: Float + Default, C: FloatChecker<F>> Default for NoisyFloat<F, C> {
     #[inline]
+    #[track_caller]
     fn default() -> Self {
         Self::new(F::default())
     }
@@ -296,6 +311,7 @@ impl<F: Float + Default, C: FloatChecker<F>> Default for NoisyFloat<F, C> {
 
 impl<F: Float + fmt::Debug, C: FloatChecker<F>> fmt::Debug for NoisyFloat<F, C> {
     #[inline]
+    #[track_caller]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::Debug::fmt(&self.value, f)
     }
@@ -303,6 +319,7 @@ impl<F: Float + fmt::Debug, C: FloatChecker<F>> fmt::Debug for NoisyFloat<F, C> 
 
 impl<F: Float + fmt::Display, C: FloatChecker<F>> fmt::Display for NoisyFloat<F, C> {
     #[inline]
+    #[track_caller]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::Display::fmt(&self.value, f)
     }
@@ -310,6 +327,7 @@ impl<F: Float + fmt::Display, C: FloatChecker<F>> fmt::Display for NoisyFloat<F,
 
 impl<F: Float + fmt::LowerExp, C: FloatChecker<F>> fmt::LowerExp for NoisyFloat<F, C> {
     #[inline]
+    #[track_caller]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::LowerExp::fmt(&self.value, f)
     }
@@ -317,6 +335,7 @@ impl<F: Float + fmt::LowerExp, C: FloatChecker<F>> fmt::LowerExp for NoisyFloat<
 
 impl<F: Float + fmt::UpperExp, C: FloatChecker<F>> fmt::UpperExp for NoisyFloat<F, C> {
     #[inline]
+    #[track_caller]
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::UpperExp::fmt(&self.value, f)
     }
