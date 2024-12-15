@@ -18,11 +18,11 @@
 //! to check for valid values, so there is no overhead
 //! when running in an optimized build.
 
-use core::marker::PhantomData;
 use crate::{
     checkers::{FiniteChecker, NumChecker},
     NoisyFloat,
 };
+use core::marker::PhantomData;
 
 /// A floating point number behaving like `f32` that does not allow NaN.
 ///

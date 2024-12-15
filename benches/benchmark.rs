@@ -37,16 +37,20 @@ fn bench_ops(c: &mut Criterion) {
     group.finish();
 
     let mut group = c.benchmark_group("Divide-Assign [20. /= 3.]");
-    group.bench_function("f64", |b| b.iter(|| {
-        let mut x = bb(20_f64);
-        x /= bb(3_f64);
-        x
-    }));
-    group.bench_function("R64", |b| b.iter(|| {
-        let mut x = r64(bb(20_f64));
-        x /= r64(bb(3_f64));
-        x
-    }));
+    group.bench_function("f64", |b| {
+        b.iter(|| {
+            let mut x = bb(20_f64);
+            x /= bb(3_f64);
+            x
+        })
+    });
+    group.bench_function("R64", |b| {
+        b.iter(|| {
+            let mut x = r64(bb(20_f64));
+            x /= r64(bb(3_f64));
+            x
+        })
+    });
     group.finish();
 
     let mut group = c.benchmark_group("Equals [20. == 20.]");
@@ -76,8 +80,12 @@ fn bench_algorithm(c: &mut Criterion) {
     let vector_r64: Vec<R64> = vector.iter().map(|&x| r64(x)).collect();
 
     let mut group = c.benchmark_group("Matrix-Vector multiply [20 x 20]");
-    group.bench_function("f64", move |b| b.iter(|| matrix_vector_multiply(bb(&matrix), bb(&vector))));
-    group.bench_function("R64", move |b| b.iter(|| matrix_vector_multiply(bb(&matrix_r64), bb(&vector_r64))));
+    group.bench_function("f64", move |b| {
+        b.iter(|| matrix_vector_multiply(bb(&matrix), bb(&vector)))
+    });
+    group.bench_function("R64", move |b| {
+        b.iter(|| matrix_vector_multiply(bb(&matrix_r64), bb(&vector_r64)))
+    });
     group.finish();
 }
 
