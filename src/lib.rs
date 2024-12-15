@@ -384,7 +384,7 @@ mod tests {
 
     #[test]
     fn borrowed_casts() {
-        assert_eq!(R64::borrowed(&3.14), &3.14);
+        assert_eq!(R64::borrowed(&3.12), &3.12);
         assert_eq!(N64::borrowed(&[f64::INFINITY; 2][0]), &f64::INFINITY);
         assert_eq!(N64::borrowed_mut(&mut 2.72), &mut 2.72);
     }
