@@ -51,28 +51,28 @@ pub type R64 = NoisyFloat<f64, FiniteChecker>;
 /// Shorthand for `N32::new(value)`.
 #[inline]
 pub const fn n32(value: f32) -> N32 {
-    assert!(!value.is_nan());
+    debug_assert!(!value.is_nan());
     N32::unchecked_new(value)
 }
 
 /// Shorthand for `N64::new(value)`.
 #[inline]
 pub const fn n64(value: f64) -> N64 {
-    assert!(!value.is_nan());
+    debug_assert!(!value.is_nan());
     N64::unchecked_new(value)
 }
 
 /// Shorthand for `R32::new(value)`.
 #[inline]
 pub const fn r32(value: f32) -> R32 {
-    assert!(value.is_finite());
+    debug_assert!(value.is_finite());
     R32::unchecked_new(value)
 }
 
 /// Shorthand for `R64::new(value)`.
 #[inline]
 pub const fn r64(value: f64) -> R64 {
-    assert!(value.is_finite());
+    debug_assert!(value.is_finite());
     R64::unchecked_new(value)
 }
 
