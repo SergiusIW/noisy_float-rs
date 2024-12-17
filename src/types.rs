@@ -18,11 +18,11 @@
 //! to check for valid values, so there is no overhead
 //! when running in an optimized build.
 
-use core::marker::PhantomData;
 use crate::{
     checkers::{FiniteChecker, NumChecker},
     NoisyFloat,
 };
+use core::marker::PhantomData;
 
 /// A floating point number behaving like `f32` that does not allow NaN.
 ///
@@ -50,26 +50,30 @@ pub type R64 = NoisyFloat<f64, FiniteChecker>;
 
 /// Shorthand for `N32::new(value)`.
 #[inline]
-pub fn n32(value: f32) -> N32 {
-    N32::new(value)
+pub const fn n32(value: f32) -> N32 {
+    debug_assert!(!value.is_nan());
+    N32::unchecked_new(value)
 }
 
 /// Shorthand for `N64::new(value)`.
 #[inline]
-pub fn n64(value: f64) -> N64 {
-    N64::new(value)
+pub const fn n64(value: f64) -> N64 {
+    debug_assert!(!value.is_nan());
+    N64::unchecked_new(value)
 }
 
 /// Shorthand for `R32::new(value)`.
 #[inline]
-pub fn r32(value: f32) -> R32 {
-    R32::new(value)
+pub const fn r32(value: f32) -> R32 {
+    debug_assert!(value.is_finite());
+    R32::unchecked_new(value)
 }
 
 /// Shorthand for `R64::new(value)`.
 #[inline]
-pub fn r64(value: f64) -> R64 {
-    R64::new(value)
+pub const fn r64(value: f64) -> R64 {
+    debug_assert!(value.is_finite());
+    R64::unchecked_new(value)
 }
 
 macro_rules! const_fns {
