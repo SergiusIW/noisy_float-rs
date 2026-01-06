@@ -29,7 +29,6 @@ use num_traits::{
 
 impl<F: Float, C: FloatChecker<F>> Clone for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn clone(&self) -> Self {
         Self::unchecked_new_generic(self.value)
     }
@@ -45,7 +44,6 @@ impl<F: Float, C: FloatChecker<F>> AsRef<F> for NoisyFloat<F, C> {
 
 impl<F: Float, C: FloatChecker<F>> PartialEq<F> for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn eq(&self, other: &F) -> bool {
         self.value.eq(&other)
     }
@@ -53,7 +51,6 @@ impl<F: Float, C: FloatChecker<F>> PartialEq<F> for NoisyFloat<F, C> {
 
 impl<F: Float, C: FloatChecker<F>> PartialEq for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn eq(&self, other: &Self) -> bool {
         self.eq(&other.value)
     }
@@ -63,27 +60,22 @@ impl<F: Float, C: FloatChecker<F>> Eq for NoisyFloat<F, C> {}
 
 impl<F: Float, C: FloatChecker<F>> PartialOrd<F> for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn partial_cmp(&self, other: &F) -> Option<Ordering> {
         self.value.partial_cmp(&other)
     }
     #[inline]
-    #[track_caller]
     fn lt(&self, other: &F) -> bool {
         self.value.lt(&other)
     }
     #[inline]
-    #[track_caller]
     fn le(&self, other: &F) -> bool {
         self.value.le(&other)
     }
     #[inline]
-    #[track_caller]
     fn gt(&self, other: &F) -> bool {
         self.value.gt(&other)
     }
     #[inline]
-    #[track_caller]
     fn ge(&self, other: &F) -> bool {
         self.value.ge(&other)
     }
@@ -91,27 +83,22 @@ impl<F: Float, C: FloatChecker<F>> PartialOrd<F> for NoisyFloat<F, C> {
 
 impl<F: Float, C: FloatChecker<F>> PartialOrd for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.value.partial_cmp(&other.value)
     }
     #[inline]
-    #[track_caller]
     fn lt(&self, other: &Self) -> bool {
         self.lt(&other.value)
     }
     #[inline]
-    #[track_caller]
     fn le(&self, other: &Self) -> bool {
         self.le(&other.value)
     }
     #[inline]
-    #[track_caller]
     fn gt(&self, other: &Self) -> bool {
         self.gt(&other.value)
     }
     #[inline]
-    #[track_caller]
     fn ge(&self, other: &Self) -> bool {
         self.ge(&other.value)
     }
@@ -119,7 +106,6 @@ impl<F: Float, C: FloatChecker<F>> PartialOrd for NoisyFloat<F, C> {
 
 impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn cmp(&self, other: &Self) -> Ordering {
         if self.value < other.value {
             Ordering::Less
@@ -133,7 +119,6 @@ impl<F: Float, C: FloatChecker<F>> Ord for NoisyFloat<F, C> {
 
 impl<C: FloatChecker<f32>> Hash for NoisyFloat<f32, C> {
     #[inline]
-    #[track_caller]
     fn hash<H: Hasher>(&self, state: &mut H) {
         let bits = if self.value == 0.0 {
             0 // this accounts for +0.0 and -0.0
@@ -146,7 +131,6 @@ impl<C: FloatChecker<f32>> Hash for NoisyFloat<f32, C> {
 
 impl<C: FloatChecker<f64>> Hash for NoisyFloat<f64, C> {
     #[inline]
-    #[track_caller]
     fn hash<H: Hasher>(&self, state: &mut H) {
         let bits = if self.value == 0.0 {
             0 // this accounts for +0.0 and -0.0
@@ -559,62 +543,50 @@ impl<F: Float, C: FloatChecker<F>> Num for NoisyFloat<F, C> {
 
 impl<F: Float, C: FloatChecker<F>> ToPrimitive for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn to_i64(&self) -> Option<i64> {
         self.value.to_i64()
     }
     #[inline]
-    #[track_caller]
     fn to_u64(&self) -> Option<u64> {
         self.value.to_u64()
     }
     #[inline]
-    #[track_caller]
     fn to_isize(&self) -> Option<isize> {
         self.value.to_isize()
     }
     #[inline]
-    #[track_caller]
     fn to_i8(&self) -> Option<i8> {
         self.value.to_i8()
     }
     #[inline]
-    #[track_caller]
     fn to_i16(&self) -> Option<i16> {
         self.value.to_i16()
     }
     #[inline]
-    #[track_caller]
     fn to_i32(&self) -> Option<i32> {
         self.value.to_i32()
     }
     #[inline]
-    #[track_caller]
     fn to_usize(&self) -> Option<usize> {
         self.value.to_usize()
     }
     #[inline]
-    #[track_caller]
     fn to_u8(&self) -> Option<u8> {
         self.value.to_u8()
     }
     #[inline]
-    #[track_caller]
     fn to_u16(&self) -> Option<u16> {
         self.value.to_u16()
     }
     #[inline]
-    #[track_caller]
     fn to_u32(&self) -> Option<u32> {
         self.value.to_u32()
     }
     #[inline]
-    #[track_caller]
     fn to_f32(&self) -> Option<f32> {
         self.value.to_f32()
     }
     #[inline]
-    #[track_caller]
     fn to_f64(&self) -> Option<f64> {
         self.value.to_f64()
     }
@@ -622,72 +594,58 @@ impl<F: Float, C: FloatChecker<F>> ToPrimitive for NoisyFloat<F, C> {
 
 impl<F: Float + FromPrimitive, C: FloatChecker<F>> FromPrimitive for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn from_isize(n: isize) -> Option<Self> {
         Self::try_new(F::from_isize(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_i8(n: i8) -> Option<Self> {
         Self::try_new(F::from_i8(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_i16(n: i16) -> Option<Self> {
         Self::try_new(F::from_i16(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_i32(n: i32) -> Option<Self> {
         Self::try_new(F::from_i32(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_i64(n: i64) -> Option<Self> {
         Self::try_new(F::from_i64(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_i128(n: i128) -> Option<Self> {
         Self::try_new(F::from_i128(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_usize(n: usize) -> Option<Self> {
         Self::try_new(F::from_usize(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_u8(n: u8) -> Option<Self> {
         Self::try_new(F::from_u8(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_u16(n: u16) -> Option<Self> {
         Self::try_new(F::from_u16(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_u32(n: u32) -> Option<Self> {
         Self::try_new(F::from_u32(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_u64(n: u64) -> Option<Self> {
         Self::try_new(F::from_u64(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_u128(n: u128) -> Option<Self> {
         Self::try_new(F::from_u128(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_f32(n: f32) -> Option<Self> {
         Self::try_new(F::from_f32(n)?)
     }
     #[inline]
-    #[track_caller]
     fn from_f64(n: f64) -> Option<Self> {
         Self::try_new(F::from_f64(n)?)
     }
@@ -695,7 +653,6 @@ impl<F: Float + FromPrimitive, C: FloatChecker<F>> FromPrimitive for NoisyFloat<
 
 impl<F: Float, C: FloatChecker<F>> NumCast for NoisyFloat<F, C> {
     #[inline]
-    #[track_caller]
     fn from<T: ToPrimitive>(n: T) -> Option<Self> {
         F::from(n).and_then(|v| Self::try_new(v))
     }
@@ -703,7 +660,6 @@ impl<F: Float, C: FloatChecker<F>> NumCast for NoisyFloat<F, C> {
 
 impl<C: FloatChecker<f32>> From<NoisyFloat<f32, C>> for f32 {
     #[inline]
-    #[track_caller]
     fn from(n: NoisyFloat<f32, C>) -> Self {
         n.value
     }
@@ -711,7 +667,6 @@ impl<C: FloatChecker<f32>> From<NoisyFloat<f32, C>> for f32 {
 
 impl<C: FloatChecker<f64>> From<NoisyFloat<f64, C>> for f64 {
     #[inline]
-    #[track_caller]
     fn from(n: NoisyFloat<f64, C>) -> Self {
         n.value
     }
@@ -719,7 +674,6 @@ impl<C: FloatChecker<f64>> From<NoisyFloat<f64, C>> for f64 {
 
 impl<C: FloatChecker<f32>> From<NoisyFloat<f32, C>> for f64 {
     #[inline]
-    #[track_caller]
     fn from(n: NoisyFloat<f32, C>) -> Self {
         n.value as f64
     }
@@ -728,7 +682,6 @@ impl<C: FloatChecker<f32>> From<NoisyFloat<f32, C>> for f64 {
 impl<C: FloatChecker<f64>> TryFrom<f64> for NoisyFloat<f64, C> {
     type Error = &'static str;
     #[inline]
-    #[track_caller]
     fn try_from(f: f64) -> Result<Self, Self::Error> {
         Self::try_new(f).ok_or("illegal value")
     }
@@ -737,7 +690,6 @@ impl<C: FloatChecker<f64>> TryFrom<f64> for NoisyFloat<f64, C> {
 impl<C: FloatChecker<f32>> TryFrom<f32> for NoisyFloat<f32, C> {
     type Error = &'static str;
     #[inline]
-    #[track_caller]
     fn try_from(f: f32) -> Result<Self, Self::Error> {
         Self::try_new(f).ok_or("illegal value")
     }
@@ -780,27 +732,22 @@ impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
         Self::new(F::max_value())
     }
     #[inline]
-    #[track_caller]
     fn is_nan(self) -> bool {
         self.value.is_nan()
     }
     #[inline]
-    #[track_caller]
     fn is_infinite(self) -> bool {
         self.value.is_infinite()
     }
     #[inline]
-    #[track_caller]
     fn is_finite(self) -> bool {
         self.value.is_finite()
     }
     #[inline]
-    #[track_caller]
     fn is_normal(self) -> bool {
         self.value.is_normal()
     }
     #[inline]
-    #[track_caller]
     fn classify(self) -> FpCategory {
         self.value.classify()
     }
@@ -1011,7 +958,6 @@ impl<F: Float, C: FloatChecker<F>> Float for NoisyFloat<F, C> {
         Self::new(self.value.atanh())
     }
     #[inline]
-    #[track_caller]
     fn integer_decode(self) -> (u64, i16, i8) {
         self.value.integer_decode()
     }
@@ -1132,12 +1078,10 @@ impl<F: Float + Signed, C: FloatChecker<F>> Signed for NoisyFloat<F, C> {
         Self::new(self.value.signum())
     }
     #[inline]
-    #[track_caller]
     fn is_positive(&self) -> bool {
         self.value.is_positive()
     }
     #[inline]
-    #[track_caller]
     fn is_negative(&self) -> bool {
         self.value.is_negative()
     }
